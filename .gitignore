@@ -1,0 +1,17 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+
+# keystore, do not commit
+*.jks
+*.keystore
+
+# maps api key, do not commit
+secrets.properties
