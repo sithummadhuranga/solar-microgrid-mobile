@@ -51,9 +51,9 @@ class ReserveSlotActivity : AppCompatActivity() {
                 val reservation = api.create(nic, stationId, slotId, scheduledTime)
                 runOnUiThread {
                     val intent = Intent(this, ReservationSummaryActivity::class.java)
-                    intent.putExtra(ReservationSummaryActivity.EXTRA_MESSAGE, "Reservation saved")
-                    intent.putExtra(ReservationSummaryActivity.EXTRA_RESERVATION_ID, reservation.optString("id"))
-                    intent.putExtra(ReservationSummaryActivity.EXTRA_STATE, reservation.optString("state"))
+                    intent.putExtra(ReservationSummaryActivity.EXTRA_MESSAGE, getString(R.string.message_reservation_saved))
+                    intent.putExtra(ReservationSummaryActivity.EXTRA_RESERVATION_ID, reservation.id)
+                    intent.putExtra(ReservationSummaryActivity.EXTRA_STATE, reservation.state)
                     startActivity(intent)
                     finish()
                 }

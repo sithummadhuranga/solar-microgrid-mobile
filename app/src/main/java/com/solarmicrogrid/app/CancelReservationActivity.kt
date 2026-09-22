@@ -41,7 +41,7 @@ class CancelReservationActivity : AppCompatActivity() {
     // shows a confirm dialog before sending the cancel request
     private fun confirmCancel(reservationId: String, errorText: TextView) {
         AlertDialog.Builder(this)
-            .setMessage(R.string.button_cancel)
+            .setMessage(R.string.confirm_cancel_reservation)
             .setPositiveButton(R.string.button_cancel) { _, _ -> cancelReservation(reservationId, errorText) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -54,9 +54,9 @@ class CancelReservationActivity : AppCompatActivity() {
                 val reservation = api.cancel(reservationId)
                 runOnUiThread {
                     val intent = Intent(this, ReservationSummaryActivity::class.java)
-                    intent.putExtra(ReservationSummaryActivity.EXTRA_MESSAGE, "Reservation cancelled")
+                    intent.putExtra(ReservationSummaryActivity.EXTRA_MESSAGE, getString(R.string.message_reservation_cancelled))
                     intent.putExtra(ReservationSummaryActivity.EXTRA_RESERVATION_ID, reservationId)
-                    intent.putExtra(ReservationSummaryActivity.EXTRA_STATE, reservation.optString("state"))
+                    intent.putExtra(ReservationSummaryActivity.EXTRA_STATE, reservation.state)
                     startActivity(intent)
                     finish()
                 }
