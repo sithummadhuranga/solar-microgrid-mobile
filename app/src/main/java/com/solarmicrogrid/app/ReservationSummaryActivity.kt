@@ -20,8 +20,8 @@ class ReservationSummaryActivity : AppCompatActivity() {
 
         findViewById<TextView>(R.id.messageText).text = intent.getStringExtra(EXTRA_MESSAGE)
         findViewById<TextView>(R.id.reservationIdText).text =
-            "Reservation id: " + intent.getStringExtra(EXTRA_RESERVATION_ID)
+            getString(R.string.label_reservation_id_prefix) + intent.getStringExtra(EXTRA_RESERVATION_ID)
         findViewById<TextView>(R.id.stateText).text =
-            "State: " + intent.getStringExtra(EXTRA_STATE)
+            getString(R.string.label_state_prefix) + intent.getStringExtra(EXTRA_STATE)
     }
 }

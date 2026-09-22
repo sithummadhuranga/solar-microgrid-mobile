@@ -24,7 +24,7 @@ class ReservationQrActivity : AppCompatActivity() {
         val qrData = intent.getStringExtra(EXTRA_QR_DATA)
 
         if (qrData.isNullOrEmpty()) {
-            qrErrorText.text = "No QR code yet, the reservation is not approved"
+            qrErrorText.text = getString(R.string.error_no_qr_yet)
             return
         }
 

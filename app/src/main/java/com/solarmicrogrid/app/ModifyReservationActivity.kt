@@ -46,9 +46,9 @@ class ModifyReservationActivity : AppCompatActivity() {
                 val reservation = api.update(reservationId, scheduledTime)
                 runOnUiThread {
                     val intent = Intent(this, ReservationSummaryActivity::class.java)
-                    intent.putExtra(ReservationSummaryActivity.EXTRA_MESSAGE, "Reservation updated")
-                    intent.putExtra(ReservationSummaryActivity.EXTRA_RESERVATION_ID, reservation.optString("id"))
-                    intent.putExtra(ReservationSummaryActivity.EXTRA_STATE, reservation.optString("state"))
+                    intent.putExtra(ReservationSummaryActivity.EXTRA_MESSAGE, getString(R.string.message_reservation_updated))
+                    intent.putExtra(ReservationSummaryActivity.EXTRA_RESERVATION_ID, reservation.id)
+                    intent.putExtra(ReservationSummaryActivity.EXTRA_STATE, reservation.state)
                     startActivity(intent)
                     finish()
                 }
