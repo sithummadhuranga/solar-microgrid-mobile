@@ -1,5 +1,6 @@
 package com.solarmicrogrid.app.model
 
+import org.json.JSONArray
 import org.json.JSONObject
 
 // holds one power trading reservation, matches the Energy Reservation collection
@@ -24,6 +25,18 @@ class EnergyReservation(
                 state = json.optString("state"),
                 qrData = if (json.has("qrData")) json.optString("qrData") else null
             )
+        }
+
+        // builds a list from the json array the list endpoints return
+        fun listFromJson(text: String): List<EnergyReservation> {
+            val array = JSONArray(text)
+            val reservations = mutableListOf<EnergyReservation>()
+
+            for (i in 0 until array.length()) {
+                reservations.add(fromJson(array.getJSONObject(i)))
+            }
+
+            return reservations
         }
     }
 }
