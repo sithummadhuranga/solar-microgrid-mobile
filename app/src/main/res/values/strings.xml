@@ -27,4 +27,24 @@
     <string name="label_reservation_id_prefix">Reservation id: </string>
     <string name="label_state_prefix">State: </string>
     <string name="error_no_qr_yet">No QR code yet, the reservation is not approved</string>
+
+    <string name="label_my_reservations">My reservations</string>
+    <string name="label_reservation_history">Reservation history</string>
+    <string name="hint_search_reservations">Search</string>
+    <string name="label_station_prefix">Microgrid node: </string>
+    <string name="label_slot_prefix">Slot: </string>
+    <string name="label_scheduled_prefix">Scheduled: </string>
+    <string name="message_no_reservations">No reservations to show</string>
+
+    <string-array name="current_states">
+        <item>All</item>
+        <item>Pending</item>
+        <item>Approved</item>
+    </string-array>
+
+    <string-array name="history_states">
+        <item>All</item>
+        <item>Done</item>
+        <item>Cancelled</item>
+    </string-array>
 </resources>
