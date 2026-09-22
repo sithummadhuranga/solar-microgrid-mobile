@@ -162,12 +162,12 @@ The document does not answer these. Leave an entry as "open" until the team fill
 | D-1 | Android language, Java or Kotlin | The document only says pure native Android. | open |
 | D-2 | Web UI choice | The document allows Bootstrap 5, Tailwind CSS or React.js. Pick one for all four members. | proposed by Member 1: React with Bootstrap 5 (react-bootstrap), TypeScript |
 | D-3 | How clients prove who they are to the API (token, session, other) | The document says login verifies the user type. It says nothing about the method. | proposed by Member 1: JWT bearer token, see section 13 |
-| D-4 | Android networking and JSON | Android SDK only (`HttpURLConnection`, `org.json`) or a library. The document says "no frameworks", so confirm what counts. | open |
-| D-5 | QR library and QR content | Options found: zxing-android-embedded (scans, and its `BarcodeEncoder` can draw a QR code) and Google ML Kit barcode scanning (scanning). Both are libraries, not cross-platform frameworks, but confirm they are allowed. The document only says "secure transaction QR code". | open |
+| D-4 | Android networking and JSON | Android SDK only (`HttpURLConnection`, `org.json`) or a library. The document says "no frameworks", so confirm what counts. | decided by Member 3: Android SDK only, `HttpURLConnection` and `org.json` |
+| D-5 | QR library and QR content | Options found: zxing-android-embedded (scans, and its `BarcodeEncoder` can draw a QR code) and Google ML Kit barcode scanning (scanning). Both are libraries, not cross-platform frameworks, but confirm they are allowed. The document only says "secure transaction QR code". | decided by Member 3: zxing-android-embedded, for drawing and later scanning |
 | D-6 | Who approves a reservation | The document says "once approved" but not who approves or how. | open |
 | D-7 | Meaning of "nearby" on the map | All nodes, or only nodes within some distance of the phone. The marking scheme says plot from stored latitude and longitude and show details on selection. | open |
 | D-8 | What "reference data" is stored in SQLite | The document says login details and reference data. | open |
-| D-9 | Fields of each collection and how a reservation links to a station and a slot, and how slot availability is counted | See section 5 for what the document implies. | open |
+| D-9 | Fields of each collection and how a reservation links to a station and a slot, and how slot availability is counted | See section 5 for what the document implies. | Energy Reservation decided by Member 3: id, prosumer NIC, station id, slot id, scheduled time (UTC), state (pending, approved, cancelled, done), QR data. Other collections still open. |
 | D-10 | Which app a Grid Operator uses to cancel for a prosumer | The document says with the assistance of a grid operator. | open |
 | D-11 | .NET version, MongoDB location (local install or hosted), API base URL | IIS needs the matching .NET Hosting Bundle. | proposed by Member 1: .NET 10, MongoDB on the local machine, database SolarMicrogrid |
 | D-12 | Repository layout | Suggestion in section 10. | proposed by Member 1: one repo with api, web and android folders |
