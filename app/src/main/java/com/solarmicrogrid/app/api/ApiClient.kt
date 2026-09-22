@@ -8,13 +8,19 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
-// calls the reservation endpoints on the web api
-// base url is a placeholder until the api is hosted, see D-11 in PROJECT_SCOPE.md
+// calls the web api, the one class every android screen uses for network calls
+// base url points at the api on the host machine from the emulator, see D-11 in PROJECT_SCOPE.md
 // authToken is null until login (M-2) stores a session to read it from
-class ReservationApi(
-    private val baseUrl: String = "http://10.0.2.2:5000/api",
+class ApiClient(
+    private val baseUrl: String = "http://10.0.2.2:5080/api",
     private val authToken: String? = null
 ) {
+
+    // sends a get request, returns the raw response text
+    fun get(path: String): String = call(path, "GET", null)
+
+    // sends a post request, returns the raw response text
+    fun post(path: String, body: JSONObject?): String = call(path, "POST", body)
 
     // creates a reservation, throws with the server message if it fails
     fun create(nic: String, stationId: String, slotId: String, scheduledTime: String): EnergyReservation {
@@ -23,23 +29,28 @@ class ReservationApi(
         body.put("stationId", stationId)
         body.put("slotId", slotId)
         body.put("scheduledTime", scheduledTime)
-        return EnergyReservation.fromJson(call("/reservations", "POST", body))
+        return EnergyReservation.fromJson(toJson(post("/reservations", body)))
     }
 
     // updates a reservation, throws with the server message if it fails, including the 12 hour rule
     fun update(id: String, scheduledTime: String): EnergyReservation {
         val body = JSONObject()
         body.put("scheduledTime", scheduledTime)
-        return EnergyReservation.fromJson(call("/reservations/$id", "PUT", body))
+        return EnergyReservation.fromJson(toJson(call("/reservations/$id", "PUT", body)))
     }
 
     // cancels a reservation, throws with the server message if it fails, including the 12 hour rule
     fun cancel(id: String): EnergyReservation {
-        return EnergyReservation.fromJson(call("/reservations/$id/cancel", "POST", null))
+        return EnergyReservation.fromJson(toJson(post("/reservations/$id/cancel", null)))
     }
 
-    // sends the request and returns the parsed json, throws with the server text on a non ok status
-    private fun call(path: String, method: String, body: JSONObject?): JSONObject {
+    // turns response text into a json object, empty text means an empty object
+    private fun toJson(text: String): JSONObject {
+        return if (text.isEmpty()) JSONObject() else JSONObject(text)
+    }
+
+    // sends the request and returns the raw response text, throws with the server text on a non ok status
+    private fun call(path: String, method: String, body: JSONObject?): String {
         val connection = URL(baseUrl + path).openConnection() as HttpURLConnection
         try {
             connection.requestMethod = method
@@ -67,7 +78,7 @@ class ReservationApi(
                 throw Exception(text)
             }
 
-            return if (text.isEmpty()) JSONObject() else JSONObject(text)
+            return text
         } finally {
             connection.disconnect()
         }

@@ -6,13 +6,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.solarmicrogrid.app.api.ReservationApi
+import com.solarmicrogrid.app.api.ApiClient
 
 // lets a prosumer reserve an energy slot, M-4
 // the nic field is temporary until login supplies it from the session
 class ReserveSlotActivity : AppCompatActivity() {
 
-    private val api = ReservationApi()
+    private val api = ApiClient()
 
     // sets up the reserve slot screen
     override fun onCreate(savedInstanceState: Bundle?) {

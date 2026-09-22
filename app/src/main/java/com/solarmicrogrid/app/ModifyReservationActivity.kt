@@ -6,12 +6,12 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.solarmicrogrid.app.api.ReservationApi
+import com.solarmicrogrid.app.api.ApiClient
 
 // lets a prosumer change the scheduled time of a reservation, M-4, BR-5 checked by the api
 class ModifyReservationActivity : AppCompatActivity() {
 
-    private val api = ReservationApi()
+    private val api = ApiClient()
 
     // sets up the modify reservation screen
     override fun onCreate(savedInstanceState: Bundle?) {
