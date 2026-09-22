@@ -4,7 +4,12 @@ Smart Solar Microgrid Trading System, the Android app. Pure native Android with 
 
 ## Folders
 
-Nothing yet. The Android Studio project is set up in a later task, once the language and networking approach are confirmed.
+Full scope and requirements are in PROJECT_SCOPE.md at the repo root. Coding rules are in .claude/skills/solar-microgrid-dev/SKILL.md.
+
+Android project structure below, in Kotlin (D-1).
+
+- `app/src/main/java` activities, models, `ApiClient`, `SQLiteOpenHelper`
+- `app/src/main/res` layouts, strings, drawables
 
 ## Needed
 
