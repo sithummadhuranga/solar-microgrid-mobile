@@ -170,8 +170,8 @@ The document does not answer these. Leave an entry as "open" until the team fill
 | D-9 | Fields of each collection and how a reservation links to a station and a slot, and how slot availability is counted | See section 5 for what the document implies. | Energy Reservation decided by Member 3: id, prosumer NIC, station id, slot id, scheduled time (UTC), state (pending, approved, cancelled, done), QR data. Other collections still open. |
 | D-10 | Which app a Grid Operator uses to cancel for a prosumer | The document says with the assistance of a grid operator. | open |
 | D-11 | .NET version, MongoDB location (local install or hosted), API base URL | IIS needs the matching .NET Hosting Bundle. | proposed by Member 1: .NET 10, MongoDB on the local machine, database SolarMicrogrid |
-| D-12 | Repository layout | Suggestion in section 10. | proposed by Member 1: one repo with api, web and android folders |
-| D-13 | Member names and my member number | Needed for the file header comment and for picking the scope in section 11. | open |
+| D-12 | Repository layout | Suggestion in section 10. | proposed by Member 1: one repo with api, web and android folders. What actually exists: two repos, `solar-microgrid-web` (api, web) and `solar-microgrid-mobile` (android). Each clone keeps its own copy of this file. |
+| D-13 | Member names and my member number | Needed for the file header comment and for picking the scope in section 11. | Member 3: Sathush Nanayakkara. Others still open. |
 | D-14 | Which roles can log in where | The document does not say. Proposed: the login carries a platform (web or mobile). Web allows Backoffice and Grid Operator. Mobile allows Prosumer and Grid Operator. Backoffice on mobile is blocked until the team decides. | proposed |
 | D-15 | Prosumer activation | The document has a pending activation view but not the flow. Proposed: a prosumer who registers is pending, a Backoffice user activates them in the web app, and a pending prosumer cannot log in. | proposed |
 | D-16 | Prosumer deactivation | Proposed: the mobile request only sets a flag, and a Backoffice user deactivates and reactivates from the web app. | proposed |
