@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SolarMicrogrid" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/solar_green</item>
+        <item name="colorPrimaryDark">@color/solar_green_dark</item>
+        <item name="colorAccent">@color/solar_green</item>
+    </style>
+</resources>
