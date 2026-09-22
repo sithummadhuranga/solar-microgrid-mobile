@@ -15,6 +15,8 @@ Android project structure below, in Kotlin (D-1).
 
 Android Studio, a JDK, an emulator or a device with Google Play services for the map.
 
+The gradle wrapper jar and gradlew scripts are not committed yet, since they need a machine with Gradle or Android Studio to generate. Open this folder in Android Studio and let it prompt to set up the wrapper on first sync, or run `gradle wrapper --gradle-version 8.7` yourself if you have Gradle installed.
+
 ## How we work
 
 Every member commits from their own account, small steps, short lower case commit messages saying what changed.
