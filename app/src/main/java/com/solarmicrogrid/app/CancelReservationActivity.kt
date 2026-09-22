@@ -7,12 +7,12 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.solarmicrogrid.app.api.ReservationApi
+import com.solarmicrogrid.app.api.ApiClient
 
 // lets a prosumer cancel a reservation, M-4, BR-5 checked by the api, BR-9
 class CancelReservationActivity : AppCompatActivity() {
 
-    private val api = ReservationApi()
+    private val api = ApiClient()
 
     // sets up the cancel reservation screen
     override fun onCreate(savedInstanceState: Bundle?) {
