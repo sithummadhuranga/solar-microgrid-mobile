@@ -10,7 +10,7 @@ import com.solarmicrogrid.app.api.ApiClient
 import com.solarmicrogrid.app.data.AppDatabase
 import org.json.JSONObject
 
-// the prosumer home screen, shows the live reservation counts and opens the other screens, M-6
+// the prosumer home screen, shows the reservation counts and opens the other screens
 class ProsumerDashboardActivity : AppCompatActivity() {
 
     private lateinit var pendingCountText: TextView

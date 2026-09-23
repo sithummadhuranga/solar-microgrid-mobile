@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.solarmicrogrid.app.model.EnergyReservation
 
-// fills the rows of the reservation lists, M-7
+// fills the rows of the reservation lists
 class ReservationAdapter : RecyclerView.Adapter<ReservationAdapter.ReservationHolder>() {
 
     private var reservations = listOf<EnergyReservation>()

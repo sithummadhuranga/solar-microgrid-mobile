@@ -1,6 +1,6 @@
 package com.solarmicrogrid.app.data
 
-// the logged in user as it is kept on the phone, see D-8 in PROJECT_SCOPE.md
+// the logged in user, as stored in the session table
 class Session(
     val userId: String,
     val nic: String,

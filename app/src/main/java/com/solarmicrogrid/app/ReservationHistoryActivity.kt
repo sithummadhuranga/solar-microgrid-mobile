@@ -15,7 +15,7 @@ import com.solarmicrogrid.app.data.AppDatabase
 import com.solarmicrogrid.app.model.EnergyReservation
 import java.net.URLEncoder
 
-// shows the prosumer's finished and cancelled reservations, with search and a state filter, M-7
+// shows the reservations that are already over, with search and a state filter
 class ReservationHistoryActivity : AppCompatActivity() {
 
     private val adapter = ReservationAdapter()
@@ -23,7 +23,7 @@ class ReservationHistoryActivity : AppCompatActivity() {
     private lateinit var stateFilter: Spinner
     private lateinit var messageText: TextView
 
-    // sets up the screen, the first load happens when the spinner reports its starting selection
+    // sets up the screen, the spinner fires once on open which loads the list
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reservation_history)
@@ -58,7 +58,7 @@ class ReservationHistoryActivity : AppCompatActivity() {
         }
     }
 
-    // asks the api for the matching reservations, off the main thread
+    // asks the api for the past reservations, off the main thread
     private fun loadReservations() {
         val session = AppDatabase(this).session()
         if (session == null) {

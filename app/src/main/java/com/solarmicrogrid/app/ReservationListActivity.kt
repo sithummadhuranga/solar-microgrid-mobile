@@ -15,7 +15,7 @@ import com.solarmicrogrid.app.data.AppDatabase
 import com.solarmicrogrid.app.model.EnergyReservation
 import java.net.URLEncoder
 
-// shows the prosumer's current and pending reservations, with search and a state filter, M-7
+// shows the reservations that have not happened yet, with search and a state filter
 class ReservationListActivity : AppCompatActivity() {
 
     private val adapter = ReservationAdapter()
@@ -23,7 +23,7 @@ class ReservationListActivity : AppCompatActivity() {
     private lateinit var stateFilter: Spinner
     private lateinit var messageText: TextView
 
-    // sets up the screen, the first load happens when the spinner reports its starting selection
+    // sets up the screen, the list loads when the spinner reports its first selection
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reservation_list)
