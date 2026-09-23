@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.solarmicrogrid.app.model.EnergyBookingSlot
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -49,11 +50,15 @@ class SlotAdapter : RecyclerView.Adapter<SlotAdapter.SlotViewHolder>() {
         return slots.size
     }
 
-    // turns a utc time from the api into the phone's local time
+    // turns a utc time from the api into the phone's local time, keeps the text if it cannot be read
     private fun toLocalTime(utc: String): String {
         val input = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
         input.timeZone = TimeZone.getTimeZone("UTC")
-        val date = input.parse(utc.take(19)) ?: return utc
+        val date = try {
+            input.parse(utc.take(19))
+        } catch (e: ParseException) {
+            null
+        } ?: return utc
         val output = SimpleDateFormat("EEE d MMM, HH:mm", Locale.getDefault())
         return output.format(date)
     }
