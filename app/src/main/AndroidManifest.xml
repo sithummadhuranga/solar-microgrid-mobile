@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -28,6 +29,8 @@
         <activity android:name=".ReservationListActivity" android:exported="false" />
         <activity android:name=".ReservationHistoryActivity" android:exported="false" />
         <activity android:name=".ProsumerDashboardActivity" android:exported="false" />
+        <activity android:name=".OperatorHomeActivity" android:exported="false" />
+        <activity android:name=".VerifyReservationActivity" android:exported="false" />
 
     </application>
 

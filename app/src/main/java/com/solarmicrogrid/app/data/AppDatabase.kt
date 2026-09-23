@@ -5,7 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-// the local SQLite database, holds login details and reference data only, M-10
+// the app's local database, keeps the logged in user so the app remembers them
 class AppDatabase(context: Context) : SQLiteOpenHelper(context, "solarmicrogrid.db", null, 1) {
 
     // creates the tables the first time the app runs

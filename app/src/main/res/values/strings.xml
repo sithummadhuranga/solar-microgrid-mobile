@@ -43,6 +43,16 @@
     <string name="label_approved_future">Approved and still to come</string>
     <string name="error_could_not_load_counts">Could not load the counts</string>
 
+    <string name="label_operator_home">Operator home</string>
+    <string name="button_scan_qr">Scan QR code</string>
+    <string name="label_scan_prompt">Point the camera at the prosumer QR code</string>
+    <string name="error_camera_needed">Camera permission is needed to scan</string>
+    <string name="label_verify_reservation">Verify reservation</string>
+    <string name="button_mark_done">Mark done</string>
+    <string name="error_qr_not_valid">Could not verify this QR code</string>
+    <string name="message_transfer_done">Energy transfer finished</string>
+    <string name="error_could_not_complete">Could not finish the transfer</string>
+
     <string-array name="current_states">
         <item>All</item>
         <item>Pending</item>
