@@ -120,11 +120,11 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(colombo, 8f))
     }
 
-    // gets the nodes from the api on a background thread
+    // gets the active nodes from the api on a background thread
     private fun loadStations() {
         Thread {
             try {
-                val json = getJson("/stations")
+                val json = getJson("/stations?active=true")
                 val stations = Station.listFromJson(json)
                 runOnUiThread { showStations(stations) }
             } catch (e: IOException) {
