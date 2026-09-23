@@ -1,4 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Solar Microgrid</string>
+
+    <string name="hint_nic">NIC</string>
+    <string name="hint_station_id">Station id</string>
+    <string name="hint_slot_id">Slot id</string>
+    <string name="hint_scheduled_time">Scheduled time (within 7 days)</string>
+    <string name="hint_reservation_id">Reservation id</string>
+
+    <string name="label_reserve_slot">Reserve slot</string>
+    <string name="label_modify_reservation">Modify reservation</string>
+    <string name="label_cancel_reservation">Cancel reservation</string>
+    <string name="label_reservation_summary">Reservation summary</string>
+    <string name="label_reservation_qr">Reservation QR code</string>
+
+    <string name="button_reserve">Reserve</string>
+    <string name="button_save_changes">Save changes</string>
+    <string name="button_cancel">Cancel reservation</string>
+
+    <string name="error_fill_required">Fill in all fields</string>
+    <string name="confirm_cancel_reservation">Cancel this reservation</string>
+
+    <string name="message_reservation_saved">Reservation saved</string>
+    <string name="message_reservation_updated">Reservation updated</string>
+    <string name="message_reservation_cancelled">Reservation cancelled</string>
+    <string name="label_reservation_id_prefix">Reservation id: </string>
+    <string name="label_state_prefix">State: </string>
+    <string name="error_no_qr_yet">No QR code yet, the reservation is not approved</string>
 </resources>

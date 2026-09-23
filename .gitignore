@@ -15,3 +15,7 @@ local.properties
 
 # maps api key, do not commit
 secrets.properties
+
+# scope and skill files are fixed, do not edit
+PROJECT_SCOPE.md
+.claude/skills/solar-microgrid-dev/SKILL.md
