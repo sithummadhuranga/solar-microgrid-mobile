@@ -4,12 +4,16 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.solarmicrogrid.app.data.AppDatabase
@@ -39,6 +43,7 @@ class OperatorHomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_operator_home)
+        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
 
         val session = AppDatabase(this).session()
         findViewById<TextView>(R.id.operatorNameText).text = session?.name ?: ""
@@ -52,6 +57,36 @@ class OperatorHomeActivity : AppCompatActivity() {
                 askCamera.launch(Manifest.permission.CAMERA)
             }
         }
+
+        // switches to the map, scan is already this screen so it just re-runs the scan flow
+        findViewById<BottomNavigationView>(R.id.bottomNav).setOnItemSelectedListener { item ->
+            if (item.itemId == R.id.nav_map) {
+                startActivity(Intent(this, StationMapActivity::class.java))
+                overridePendingTransition(0, 0)
+                finish()
+            } else {
+                findViewById<Button>(R.id.scanButton).performClick()
+            }
+            true
+        }
+    }
+
+    // adds the log out action to the toolbar's overflow menu
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.toolbar_logout, menu)
+        return true
+    }
+
+    // clears the session and sends the operator back to the login screen
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_logout) {
+            AppDatabase(this).clearSession()
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     // opens the camera scanner, qr codes only
