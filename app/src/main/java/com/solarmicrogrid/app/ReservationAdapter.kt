@@ -11,6 +11,7 @@ import com.solarmicrogrid.app.model.EnergyReservation
 class ReservationAdapter : RecyclerView.Adapter<ReservationAdapter.ReservationHolder>() {
 
     private var reservations = listOf<EnergyReservation>()
+    private var stationNames = mapOf<String, String>()
 
     // holds the views of one row
     class ReservationHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -26,6 +27,11 @@ class ReservationAdapter : RecyclerView.Adapter<ReservationAdapter.ReservationHo
         notifyDataSetChanged()
     }
 
+    // gives the rows the node names so a row can show a name instead of an id
+    fun setStationNames(names: Map<String, String>) {
+        stationNames = names
+    }
+
     // creates one empty row
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReservationHolder {
         val view = LayoutInflater.from(parent.context)
@@ -38,8 +44,11 @@ class ReservationAdapter : RecyclerView.Adapter<ReservationAdapter.ReservationHo
         val reservation = reservations[position]
         val context = holder.itemView.context
 
+        // falls back to the id when the node is not in the saved list
+        val stationName = stationNames[reservation.stationId] ?: reservation.stationId
+
         holder.stationText.text =
-            context.getString(R.string.label_station_prefix) + reservation.stationId
+            context.getString(R.string.label_station_prefix) + stationName
         holder.slotText.text =
             context.getString(R.string.label_slot_prefix) + reservation.slotId
         holder.scheduledTimeText.text =

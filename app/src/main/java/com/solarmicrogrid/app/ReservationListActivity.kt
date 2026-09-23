@@ -60,7 +60,8 @@ class ReservationListActivity : AppCompatActivity() {
 
     // asks the api for the matching reservations, off the main thread
     private fun loadReservations() {
-        val session = AppDatabase(this).session()
+        val database = AppDatabase(this)
+        val session = database.session()
         if (session == null) {
             showMessage(getString(R.string.message_not_logged_in))
             return
@@ -72,7 +73,9 @@ class ReservationListActivity : AppCompatActivity() {
         Thread {
             try {
                 val reservations = EnergyReservation.listFromJson(api.get(path))
+                val names = database.stations().associate { it.id to it.name }
                 runOnUiThread {
+                    adapter.setStationNames(names)
                     adapter.setReservations(reservations)
                     if (reservations.isEmpty()) {
                         showMessage(getString(R.string.message_no_reservations))

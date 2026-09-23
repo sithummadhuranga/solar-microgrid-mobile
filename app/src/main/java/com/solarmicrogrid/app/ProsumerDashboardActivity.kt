@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.solarmicrogrid.app.api.ApiClient
 import com.solarmicrogrid.app.data.AppDatabase
+import com.solarmicrogrid.app.data.Station
 import org.json.JSONObject
 
 // the prosumer home screen, shows the reservation counts and opens the other screens
@@ -43,6 +44,22 @@ class ProsumerDashboardActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadCounts()
+        syncStations()
+    }
+
+    // pulls the microgrid nodes and keeps them on the phone for the booking lists to use
+    private fun syncStations() {
+        val database = AppDatabase(this)
+        val session = database.session() ?: return
+        val api = ApiClient(authToken = session.token)
+
+        Thread {
+            try {
+                database.saveStations(Station.listFromJson(api.get("/stations")))
+            } catch (e: Exception) {
+                // keeps whatever was saved before, the lists fall back to showing the id
+            }
+        }.start()
     }
 
     // asks the api for the two counts, off the main thread
