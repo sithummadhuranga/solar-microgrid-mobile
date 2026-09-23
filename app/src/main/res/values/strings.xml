@@ -35,6 +35,8 @@
     <string name="label_slot_prefix">Slot: </string>
     <string name="label_scheduled_prefix">Scheduled: </string>
     <string name="message_no_reservations">No reservations to show</string>
+    <string name="message_not_logged_in">Log in to see your reservations</string>
+    <string name="error_could_not_load">Could not load reservations</string>
 
     <string-array name="current_states">
         <item>All</item>

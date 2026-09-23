@@ -12,7 +12,7 @@ class ReservationAdapter : RecyclerView.Adapter<ReservationAdapter.ReservationHo
 
     private var reservations = listOf<EnergyReservation>()
 
-    // keeps the views of one row so they are not looked up again
+    // holds the views of one row
     class ReservationHolder(view: View) : RecyclerView.ViewHolder(view) {
         val stationText: TextView = view.findViewById(R.id.stationText)
         val slotText: TextView = view.findViewById(R.id.slotText)

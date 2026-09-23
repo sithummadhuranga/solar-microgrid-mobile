@@ -25,6 +25,8 @@
         <activity android:name=".CancelReservationActivity" android:exported="false" />
         <activity android:name=".ReservationSummaryActivity" android:exported="false" />
         <activity android:name=".ReservationQrActivity" android:exported="false" />
+        <activity android:name=".ReservationListActivity" android:exported="false" />
+        <activity android:name=".ReservationHistoryActivity" android:exported="false" />
 
     </application>
 
