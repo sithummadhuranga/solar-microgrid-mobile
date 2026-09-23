@@ -5,7 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-// local.properties is git-ignored, it holds the temporary api token
+// local.properties is git-ignored, it holds the maps key and the temporary api token
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -23,6 +23,7 @@ android {
         versionCode = 1
         versionName = "1.0"
         buildConfigField("String", "API_TOKEN", "\"\"")
+        manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY", "")
     }
 
     buildFeatures {
@@ -56,4 +57,5 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
 }
