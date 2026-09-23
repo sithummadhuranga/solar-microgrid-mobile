@@ -38,6 +38,11 @@
     <string name="message_not_logged_in">Log in to see your reservations</string>
     <string name="error_could_not_load">Could not load reservations</string>
 
+    <string name="label_dashboard">Dashboard</string>
+    <string name="label_pending_reservations">Pending reservations</string>
+    <string name="label_approved_future">Approved and still to come</string>
+    <string name="error_could_not_load_counts">Could not load the counts</string>
+
     <string-array name="current_states">
         <item>All</item>
         <item>Pending</item>

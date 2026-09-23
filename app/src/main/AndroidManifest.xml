@@ -27,6 +27,7 @@
         <activity android:name=".ReservationQrActivity" android:exported="false" />
         <activity android:name=".ReservationListActivity" android:exported="false" />
         <activity android:name=".ReservationHistoryActivity" android:exported="false" />
+        <activity android:name=".ProsumerDashboardActivity" android:exported="false" />
 
     </application>
 
