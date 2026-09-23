@@ -27,4 +27,41 @@
     <string name="label_reservation_id_prefix">Reservation id: </string>
     <string name="label_state_prefix">State: </string>
     <string name="error_no_qr_yet">No QR code yet, the reservation is not approved</string>
+
+    <string name="label_my_reservations">My reservations</string>
+    <string name="label_reservation_history">Reservation history</string>
+    <string name="hint_search_reservations">Search</string>
+    <string name="label_station_prefix">Microgrid node: </string>
+    <string name="label_slot_prefix">Slot: </string>
+    <string name="label_scheduled_prefix">Scheduled: </string>
+    <string name="message_no_reservations">No reservations to show</string>
+    <string name="message_not_logged_in">Log in to see your reservations</string>
+    <string name="error_could_not_load">Could not load reservations</string>
+
+    <string name="label_dashboard">Dashboard</string>
+    <string name="label_pending_reservations">Pending reservations</string>
+    <string name="label_approved_future">Approved and still to come</string>
+    <string name="error_could_not_load_counts">Could not load the counts</string>
+
+    <string name="label_operator_home">Operator home</string>
+    <string name="button_scan_qr">Scan QR code</string>
+    <string name="label_scan_prompt">Point the camera at the prosumer QR code</string>
+    <string name="error_camera_needed">Camera permission is needed to scan</string>
+    <string name="label_verify_reservation">Verify reservation</string>
+    <string name="button_mark_done">Mark done</string>
+    <string name="error_qr_not_valid">Could not verify this QR code</string>
+    <string name="message_transfer_done">Energy transfer finished</string>
+    <string name="error_could_not_complete">Could not finish the transfer</string>
+
+    <string-array name="current_states">
+        <item>All</item>
+        <item>Pending</item>
+        <item>Approved</item>
+    </string-array>
+
+    <string-array name="history_states">
+        <item>All</item>
+        <item>Done</item>
+        <item>Cancelled</item>
+    </string-array>
 </resources>
