@@ -4,4 +4,11 @@
     <string name="station_map_title">Microgrid nodes</string>
     <string name="server_unreachable">Could not reach the server</string>
     <string name="request_failed">Request failed, code %1$d</string>
+    <string name="station_capacity">Capacity (kW/h): %1$s</string>
+    <string name="station_slot_count">Battery storage slots: %1$d</string>
+    <string name="station_hours">Opening hours: %1$s to %2$s</string>
+    <string name="upcoming_slots">Upcoming slots</string>
+    <string name="no_upcoming_slots">No upcoming slots</string>
+    <string name="slot_time">%1$s to %2$s</string>
+    <string name="slot_free">Free battery storage slots: %1$d of %2$d</string>
 </resources>
