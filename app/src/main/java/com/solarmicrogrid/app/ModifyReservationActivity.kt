@@ -7,11 +7,10 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.solarmicrogrid.app.api.ApiClient
+import com.solarmicrogrid.app.data.AppDatabase
 
-// lets a prosumer change the scheduled time of a reservation, M-4, BR-5 checked by the api
+// lets a prosumer change the scheduled time of a reservation, the api checks the 12 hour notice rule
 class ModifyReservationActivity : AppCompatActivity() {
-
-    private val api = ApiClient()
 
     // sets up the modify reservation screen
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +21,14 @@ class ModifyReservationActivity : AppCompatActivity() {
         val scheduledTimeInput = findViewById<EditText>(R.id.scheduledTimeInput)
         val errorText = findViewById<TextView>(R.id.errorText)
         val saveButton = findViewById<Button>(R.id.saveButton)
+
+        val session = AppDatabase(this).session()
+        if (session == null) {
+            errorText.text = getString(R.string.message_not_logged_in)
+            errorText.visibility = TextView.VISIBLE
+            saveButton.isEnabled = false
+            return
+        }
 
         // checks the fields are filled, then sends the update request
         saveButton.setOnClickListener {
@@ -35,15 +42,15 @@ class ModifyReservationActivity : AppCompatActivity() {
             }
 
             errorText.visibility = TextView.GONE
-            saveChanges(reservationId, scheduledTime, errorText)
+            saveChanges(session.token, reservationId, scheduledTime, errorText)
         }
     }
 
     // sends the update reservation request off the main thread
-    private fun saveChanges(reservationId: String, scheduledTime: String, errorText: TextView) {
+    private fun saveChanges(token: String, reservationId: String, scheduledTime: String, errorText: TextView) {
         Thread {
             try {
-                val reservation = api.update(reservationId, scheduledTime)
+                val reservation = ApiClient(authToken = token).update(reservationId, scheduledTime)
                 runOnUiThread {
                     val intent = Intent(this, ReservationSummaryActivity::class.java)
                     intent.putExtra(ReservationSummaryActivity.EXTRA_MESSAGE, getString(R.string.message_reservation_updated))
