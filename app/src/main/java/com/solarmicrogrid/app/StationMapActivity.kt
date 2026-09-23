@@ -19,6 +19,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.solarmicrogrid.app.model.EnergyBookingSlot
 import com.solarmicrogrid.app.model.Station
@@ -37,6 +38,8 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var selectedStationId = ""
     private val colombo = LatLng(6.9271, 79.8612)
     private var hasAskedLocation = false
+    private var stations: List<Station> = emptyList()
+    private var userLocation: LatLng? = null
 
     // after a screen rotation the answer can arrive before the map is ready, onMapReady then centres it
     private val locationPermission = registerForActivityResult(
@@ -112,12 +115,50 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             showColombo()
             return
         }
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(best.latitude, best.longitude), 12f))
+        userLocation = LatLng(best.latitude, best.longitude)
+        if (stations.isEmpty()) {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation!!, 12f))
+        } else {
+            fitCamera()
+        }
     }
 
-    // moves the camera to colombo at zoom 8
+    // shows every node when there is no phone location, or colombo at zoom 8 before the nodes load
     private fun showColombo() {
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(colombo, 8f))
+        if (stations.isEmpty()) {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(colombo, 8f))
+        } else {
+            fitCamera()
+        }
+    }
+
+    // fits the camera around the phone and its nearest node, or around every node when the location is unknown
+    private fun fitCamera() {
+        val here = userLocation
+        val points = if (here != null) listOf(here, nearestTo(here)) else stations.map { LatLng(it.latitude, it.longitude) }
+        if (points.distinct().size == 1) {
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(points[0], 12f))
+            return
+        }
+        val bounds = LatLngBounds.Builder()
+        for (point in points) bounds.include(point)
+        val padding = (64 * resources.displayMetrics.density).toInt()
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), padding))
+    }
+
+    // finds the position of the node closest to a point, used only to frame the camera
+    private fun nearestTo(point: LatLng): LatLng {
+        var nearest = stations[0]
+        var nearestDistance = Float.MAX_VALUE
+        val result = FloatArray(1)
+        for (station in stations) {
+            Location.distanceBetween(point.latitude, point.longitude, station.latitude, station.longitude, result)
+            if (result[0] < nearestDistance) {
+                nearestDistance = result[0]
+                nearest = station
+            }
+        }
+        return LatLng(nearest.latitude, nearest.longitude)
     }
 
     // gets the active nodes from the api on a background thread
@@ -135,10 +176,10 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }.start()
     }
 
-    // adds one marker per node, titled with the node name, skips a node without a location
-    private fun showStations(stations: List<Station>) {
+    // adds one marker per node, titled with the node name, skips a node without a location, then frames the camera
+    private fun showStations(list: List<Station>) {
+        stations = list.filter { !it.latitude.isNaN() && !it.longitude.isNaN() }
         for (station in stations) {
-            if (station.latitude.isNaN() || station.longitude.isNaN()) continue
             val marker = map.addMarker(
                 MarkerOptions()
                     .position(LatLng(station.latitude, station.longitude))
@@ -146,6 +187,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             )
             marker?.tag = station
         }
+        if (stations.isNotEmpty()) fitCamera()
     }
 
     // fills the panel under the map with the selected node
