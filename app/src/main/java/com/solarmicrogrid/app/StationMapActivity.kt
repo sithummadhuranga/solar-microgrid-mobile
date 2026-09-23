@@ -22,6 +22,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.solarmicrogrid.app.model.EnergyBookingSlot
 import com.solarmicrogrid.app.model.Station
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -193,6 +195,16 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
+    // reads "message" from an api error body, falls back to the raw text or the status code
+    private fun errorMessage(text: String, code: Int): String {
+        if (text.isEmpty()) return getString(R.string.request_failed, code)
+        return try {
+            JSONObject(text).optString("message").ifEmpty { text }
+        } catch (e: JSONException) {
+            text
+        }
+    }
+
     // sends a GET with the bearer token and returns the body, throws the api message on failure
     // temporary, switches to ApiClient.get once member 4's branch is merged
     private fun getJson(path: String): String {
@@ -206,7 +218,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             val stream = if (isOk) connection.inputStream else connection.errorStream
             val text = stream?.bufferedReader()?.use { it.readText() } ?: ""
             if (!isOk) {
-                throw Exception(text.ifEmpty { getString(R.string.request_failed, code) })
+                throw Exception(errorMessage(text, code))
             }
             return text
         } finally {
