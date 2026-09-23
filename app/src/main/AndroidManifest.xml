@@ -24,6 +24,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".StationMapActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
