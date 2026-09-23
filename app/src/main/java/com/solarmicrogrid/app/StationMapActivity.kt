@@ -1,13 +1,18 @@
 package com.solarmicrogrid.app
 
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.solarmicrogrid.app.model.EnergyBookingSlot
 import com.solarmicrogrid.app.model.Station
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -18,19 +23,31 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val apiUrl = "http://10.0.2.2:5080/api"
     private lateinit var map: GoogleMap
+    private val slotAdapter = SlotAdapter()
+    private var selectedStationId = ""
 
-    // loads the layout and asks for the map
+    // loads the layout, sets up the slot list and asks for the map
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_station_map)
+
+        val slotList = findViewById<RecyclerView>(R.id.slot_list)
+        slotList.layoutManager = LinearLayoutManager(this)
+        slotList.adapter = slotAdapter
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
-    // keeps the map once it is ready and loads the nodes
+    // keeps the map once it is ready, listens for marker taps and loads the nodes
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+        map.setOnMarkerClickListener { marker ->
+            val station = marker.tag as Station
+            showStationDetails(station)
+            loadSlots(station)
+            false
+        }
         loadStations()
     }
 
@@ -52,12 +69,55 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     // adds one marker per node, titled with the node name
     private fun showStations(stations: List<Station>) {
         for (station in stations) {
-            map.addMarker(
+            val marker = map.addMarker(
                 MarkerOptions()
                     .position(LatLng(station.latitude, station.longitude))
                     .title(station.name)
             )
+            marker?.tag = station
         }
+    }
+
+    // fills the panel under the map with the selected node
+    private fun showStationDetails(station: Station) {
+        selectedStationId = station.id
+        val capacity = station.capacityKwh.toBigDecimal().stripTrailingZeros().toPlainString()
+
+        findViewById<TextView>(R.id.station_name).text = station.name
+        findViewById<TextView>(R.id.station_address).text = station.address
+        findViewById<TextView>(R.id.station_capacity).text =
+            getString(R.string.station_capacity, capacity)
+        findViewById<TextView>(R.id.station_slot_count).text =
+            getString(R.string.station_slot_count, station.batterySlotCount)
+        findViewById<TextView>(R.id.station_hours).text =
+            getString(R.string.station_hours, station.openingTime, station.closingTime)
+
+        slotAdapter.setItems(emptyList())
+        findViewById<View>(R.id.no_slots_text).visibility = View.GONE
+        findViewById<View>(R.id.details_panel).visibility = View.VISIBLE
+    }
+
+    // gets the upcoming slots of a node from the api on a background thread
+    private fun loadSlots(station: Station) {
+        Thread {
+            try {
+                val json = getJson("/stations/${station.id}/slots")
+                val slots = EnergyBookingSlot.listFromJson(json)
+                runOnUiThread { showSlots(station.id, slots) }
+            } catch (e: IOException) {
+                runOnUiThread { showError(getString(R.string.server_unreachable)) }
+            } catch (e: Exception) {
+                runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
+            }
+        }.start()
+    }
+
+    // shows the slots, skipped if another node was tapped while they loaded
+    private fun showSlots(stationId: String, slots: List<EnergyBookingSlot>) {
+        if (stationId != selectedStationId) return
+        slotAdapter.setItems(slots)
+        findViewById<View>(R.id.no_slots_text).visibility =
+            if (slots.isEmpty()) View.VISIBLE else View.GONE
     }
 
     // shows a message from the api or the network
