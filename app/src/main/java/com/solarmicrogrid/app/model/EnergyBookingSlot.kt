@@ -17,13 +17,18 @@ class EnergyBookingSlot(
         // reads one slot from a json object
         fun fromJson(json: JSONObject): EnergyBookingSlot {
             return EnergyBookingSlot(
-                id = json.optString("id"),
-                stationId = json.optString("stationId"),
-                startTime = json.optString("startTime"),
-                endTime = json.optString("endTime"),
+                id = text(json, "id"),
+                stationId = text(json, "stationId"),
+                startTime = text(json, "startTime"),
+                endTime = text(json, "endTime"),
                 totalSlots = json.optInt("totalSlots"),
                 availableSlots = json.optInt("availableSlots")
             )
+        }
+
+        // reads a text field, gives an empty string for a json null instead of the word "null"
+        private fun text(json: JSONObject, name: String): String {
+            return if (json.isNull(name)) "" else json.optString(name)
         }
 
         // reads a list of slots from a json array string

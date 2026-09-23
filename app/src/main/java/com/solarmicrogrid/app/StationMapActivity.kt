@@ -34,17 +34,22 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private val slotAdapter = SlotAdapter()
     private var selectedStationId = ""
     private val colombo = LatLng(6.9271, 79.8612)
+    private var hasAskedLocation = false
 
+    // after a screen rotation the answer can arrive before the map is ready, onMapReady then centres it
     private val locationPermission = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        if (result.containsValue(true)) showMyLocation() else showColombo()
+        if (::map.isInitialized) {
+            if (result.containsValue(true)) showMyLocation() else showColombo()
+        }
     }
 
     // loads the layout, sets up the slot list and asks for the map
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_station_map)
+        hasAskedLocation = savedInstanceState?.getBoolean("hasAskedLocation") ?: false
 
         val slotList = findViewById<RecyclerView>(R.id.slot_list)
         slotList.layoutManager = LinearLayoutManager(this)
@@ -54,11 +59,17 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
+    // keeps whether the location question was asked, so a rotation does not ask again
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("hasAskedLocation", hasAskedLocation)
+    }
+
     // keeps the map once it is ready, listens for marker taps and loads the nodes
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.setOnMarkerClickListener { marker ->
-            val station = marker.tag as Station
+            val station = marker.tag as? Station ?: return@setOnMarkerClickListener false
             showStationDetails(station)
             loadSlots(station)
             false
@@ -67,7 +78,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         loadStations()
     }
 
-    // uses the location permission if granted, otherwise asks for it
+    // uses the location permission if granted, otherwise asks for it once
     private fun centreMap() {
         val hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
@@ -75,7 +86,10 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             PackageManager.PERMISSION_GRANTED
         if (hasFine || hasCoarse) {
             showMyLocation()
+        } else if (hasAskedLocation) {
+            showColombo()
         } else {
+            hasAskedLocation = true
             locationPermission.launch(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
             )
@@ -119,9 +133,10 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }.start()
     }
 
-    // adds one marker per node, titled with the node name
+    // adds one marker per node, titled with the node name, skips a node without a location
     private fun showStations(stations: List<Station>) {
         for (station in stations) {
+            if (station.latitude.isNaN() || station.longitude.isNaN()) continue
             val marker = map.addMarker(
                 MarkerOptions()
                     .position(LatLng(station.latitude, station.longitude))
