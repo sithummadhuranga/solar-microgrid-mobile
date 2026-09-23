@@ -1,5 +1,6 @@
 package com.solarmicrogrid.app
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -8,8 +9,10 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.solarmicrogrid.app.api.ApiClient
 import com.solarmicrogrid.app.data.AppDatabase
 import com.solarmicrogrid.app.model.EnergyReservation
@@ -27,6 +30,18 @@ class ReservationListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reservation_list)
+        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
+
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+        bottomNav.selectedItemId = R.id.nav_bookings
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_dashboard -> switchTo(ProsumerDashboardActivity::class.java)
+                R.id.nav_reserve -> switchTo(ReserveSlotActivity::class.java)
+                R.id.nav_profile -> switchTo(EditProfileActivity::class.java)
+            }
+            true
+        }
 
         searchInput = findViewById(R.id.searchInput)
         stateFilter = findViewById(R.id.stateFilter)
@@ -112,5 +127,12 @@ class ReservationListActivity : AppCompatActivity() {
     // hides the line above the list
     private fun hideMessage() {
         messageText.visibility = View.GONE
+    }
+
+    // moves to another tab, closes this one so the tabs do not stack up
+    private fun switchTo(screen: Class<*>) {
+        startActivity(Intent(this, screen))
+        overridePendingTransition(0, 0)
+        finish()
     }
 }

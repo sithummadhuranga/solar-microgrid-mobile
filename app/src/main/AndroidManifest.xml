@@ -19,7 +19,7 @@
             android:value="${MAPS_API_KEY}" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,6 +27,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".RegisterActivity" android:exported="false" />
+        <activity android:name=".EditProfileActivity" android:exported="false" />
         <activity android:name=".ReserveSlotActivity" android:exported="false" />
         <activity android:name=".ModifyReservationActivity" android:exported="false" />
         <activity android:name=".CancelReservationActivity" android:exported="false" />

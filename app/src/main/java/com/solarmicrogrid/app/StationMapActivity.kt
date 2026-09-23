@@ -2,6 +2,7 @@ package com.solarmicrogrid.app
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
@@ -11,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,18 +23,16 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.solarmicrogrid.app.api.ApiClient
+import com.solarmicrogrid.app.data.AppDatabase
 import com.solarmicrogrid.app.model.EnergyBookingSlot
 import com.solarmicrogrid.app.model.Station
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 
-// map of microgrid nodes plotted from their stored latitude and longitude (M-8)
+// map of microgrid nodes plotted from their stored latitude and longitude
 class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private val apiUrl = "http://10.0.2.2:5080/api"
     private lateinit var map: GoogleMap
     private val slotAdapter = SlotAdapter()
     private var selectedStationId = ""
@@ -54,7 +54,10 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_station_map)
+        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
         hasAskedLocation = savedInstanceState?.getBoolean("hasAskedLocation") ?: false
+
+        setUpBottomNav()
 
         val slotList = findViewById<RecyclerView>(R.id.slot_list)
         slotList.layoutManager = LinearLayoutManager(this)
@@ -62,6 +65,37 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+    }
+
+    // the map is one of the operator's two tabs, but not one of the prosumer's, so a prosumer gets a back arrow instead
+    private fun setUpBottomNav() {
+        val role = AppDatabase(this).session()?.role
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+
+        if (role == "GridOperator") {
+            bottomNav.inflateMenu(R.menu.bottom_nav_operator)
+            bottomNav.selectedItemId = R.id.nav_map
+            bottomNav.setOnItemSelectedListener { item ->
+                if (item.itemId == R.id.nav_scan) switchTo(OperatorHomeActivity::class.java)
+                true
+            }
+        } else {
+            bottomNav.visibility = View.GONE
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        }
+    }
+
+    // closes this screen when the back arrow in the toolbar is tapped, prosumer only, see setUpBottomNav
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressedDispatcher.onBackPressed()
+        return true
+    }
+
+    // moves to another tab, closes this one so the tabs do not stack up
+    private fun switchTo(screen: Class<*>) {
+        startActivity(Intent(this, screen))
+        overridePendingTransition(0, 0)
+        finish()
     }
 
     // keeps whether the location question was asked, so a rotation does not ask again
@@ -237,34 +271,9 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    // reads "message" from an api error body, falls back to the raw text or the status code
-    private fun errorMessage(text: String, code: Int): String {
-        if (text.isEmpty()) return getString(R.string.request_failed, code)
-        return try {
-            JSONObject(text).optString("message").ifEmpty { text }
-        } catch (e: JSONException) {
-            text
-        }
-    }
-
-    // sends a GET with the bearer token and returns the body, throws the api message on failure
-    // temporary, switches to ApiClient.get once member 4's branch is merged
+    // sends a GET with the logged in user's token and returns the body, throws the api message on failure
     private fun getJson(path: String): String {
-        val connection = URL(apiUrl + path).openConnection() as HttpURLConnection
-        connection.setRequestProperty("Authorization", "Bearer " + BuildConfig.API_TOKEN)
-        connection.connectTimeout = 10000
-        connection.readTimeout = 10000
-        try {
-            val code = connection.responseCode
-            val isOk = code in 200..299
-            val stream = if (isOk) connection.inputStream else connection.errorStream
-            val text = stream?.bufferedReader()?.use { it.readText() } ?: ""
-            if (!isOk) {
-                throw Exception(errorMessage(text, code))
-            }
-            return text
-        } finally {
-            connection.disconnect()
-        }
+        val token = AppDatabase(this).session()?.token
+        return ApiClient(authToken = token).get(path)
     }
 }

@@ -8,11 +8,10 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.solarmicrogrid.app.api.ApiClient
+import com.solarmicrogrid.app.data.AppDatabase
 
-// lets a prosumer cancel a reservation, M-4, BR-5 checked by the api, BR-9
+// lets a prosumer cancel a reservation, the api checks the 12 hour notice rule, a grid operator can also cancel one
 class CancelReservationActivity : AppCompatActivity() {
-
-    private val api = ApiClient()
 
     // sets up the cancel reservation screen
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +21,14 @@ class CancelReservationActivity : AppCompatActivity() {
         val reservationIdInput = findViewById<EditText>(R.id.reservationIdInput)
         val errorText = findViewById<TextView>(R.id.errorText)
         val cancelButton = findViewById<Button>(R.id.cancelButton)
+
+        val session = AppDatabase(this).session()
+        if (session == null) {
+            errorText.text = getString(R.string.message_not_logged_in)
+            errorText.visibility = TextView.VISIBLE
+            cancelButton.isEnabled = false
+            return
+        }
 
         // checks the reservation id is filled, then asks to confirm before cancelling
         cancelButton.setOnClickListener {
@@ -34,24 +41,24 @@ class CancelReservationActivity : AppCompatActivity() {
             }
 
             errorText.visibility = TextView.GONE
-            confirmCancel(reservationId, errorText)
+            confirmCancel(session.token, reservationId, errorText)
         }
     }
 
     // shows a confirm dialog before sending the cancel request
-    private fun confirmCancel(reservationId: String, errorText: TextView) {
+    private fun confirmCancel(token: String, reservationId: String, errorText: TextView) {
         AlertDialog.Builder(this)
             .setMessage(R.string.confirm_cancel_reservation)
-            .setPositiveButton(R.string.button_cancel) { _, _ -> cancelReservation(reservationId, errorText) }
+            .setPositiveButton(R.string.button_cancel) { _, _ -> cancelReservation(token, reservationId, errorText) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
     // sends the cancel reservation request off the main thread
-    private fun cancelReservation(reservationId: String, errorText: TextView) {
+    private fun cancelReservation(token: String, reservationId: String, errorText: TextView) {
         Thread {
             try {
-                val reservation = api.cancel(reservationId)
+                val reservation = ApiClient(authToken = token).cancel(reservationId)
                 runOnUiThread {
                     val intent = Intent(this, ReservationSummaryActivity::class.java)
                     intent.putExtra(ReservationSummaryActivity.EXTRA_MESSAGE, getString(R.string.message_reservation_cancelled))
