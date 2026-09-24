@@ -184,6 +184,11 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun fitCamera() {
         val here = userLocation
         val points = if (here != null) listOf(here, nearestTo(here)) else stations.map { LatLng(it.latitude, it.longitude) }
+        fitPoints(points)
+    }
+
+    // moves the camera so every point is on screen, or zooms on the point when there is only one
+    private fun fitPoints(points: List<LatLng>) {
         if (points.distinct().size == 1) {
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(points[0], 12f))
             return
