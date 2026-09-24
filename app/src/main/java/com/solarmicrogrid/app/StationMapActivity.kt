@@ -105,6 +105,20 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         finish()
     }
 
+    // reloads the nodes when the map comes back on screen
+    override fun onResume() {
+        super.onResume()
+        refreshNow()
+    }
+
+    // reloads the nodes and the selected node's slots without moving the camera
+    private fun refreshNow() {
+        if (!::map.isInitialized) return
+        loadStations(quiet = true)
+        val selected = stations.find { it.id == selectedStationId }
+        if (selected != null) loadSlots(selected, quiet = true)
+    }
+
     // keeps whether the location question was asked, so a rotation does not ask again
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
