@@ -117,7 +117,9 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             val station = marker.tag as? Station ?: return@setOnMarkerClickListener false
             showStationDetails(station)
             loadSlots(station)
-            false
+            marker.showInfoWindow()
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 14f))
+            true
         }
         centreMap()
         loadStations()
