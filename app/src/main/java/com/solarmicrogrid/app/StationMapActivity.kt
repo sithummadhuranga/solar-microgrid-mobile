@@ -183,7 +183,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     // fits the camera around the phone and its nearest node, or around every node when the location is unknown
     private fun fitCamera() {
         val here = userLocation
-        val points = if (here != null) listOf(here, nearestTo(here)) else stations.map { LatLng(it.latitude, it.longitude) }
+        val points = if (here != null) listOf(here) + nearestTo(here, 1) else stations.map { LatLng(it.latitude, it.longitude) }
         fitPoints(points)
     }
 
@@ -199,19 +199,16 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), padding))
     }
 
-    // finds the position of the node closest to a point, used only to frame the camera
-    private fun nearestTo(point: LatLng): LatLng {
-        var nearest = stations[0]
-        var nearestDistance = Float.MAX_VALUE
+    // finds the positions of the nodes closest to a point, used only to frame the camera
+    private fun nearestTo(point: LatLng, count: Int): List<LatLng> {
         val result = FloatArray(1)
-        for (station in stations) {
-            Location.distanceBetween(point.latitude, point.longitude, station.latitude, station.longitude, result)
-            if (result[0] < nearestDistance) {
-                nearestDistance = result[0]
-                nearest = station
+        return stations
+            .sortedBy { station ->
+                Location.distanceBetween(point.latitude, point.longitude, station.latitude, station.longitude, result)
+                result[0]
             }
-        }
-        return LatLng(nearest.latitude, nearest.longitude)
+            .take(count)
+            .map { LatLng(it.latitude, it.longitude) }
     }
 
     // gets the active nodes from the api on a background thread
