@@ -8,8 +8,10 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
+// thrown for a signed in call the api no longer accepts, the account may be deactivated
+class SessionExpiredException(message: String) : Exception(message)
+
 // calls the web api, the one class every android screen uses for network calls
-// base url points at the api on the host machine from the emulator
 class ApiClient(
     private val baseUrl: String = "http://10.0.2.2:5080/api",
     private val authToken: String? = null
@@ -130,7 +132,12 @@ class ApiClient(
             val text = BufferedReader(InputStreamReader(stream)).readText()
 
             if (status !in 200..299) {
-                throw Exception(errorMessage(text))
+                val message = errorMessage(text)
+                // only a signed in call means the session is no longer valid
+                if ((status == 401 || status == 403) && authToken != null) {
+                    throw SessionExpiredException(message)
+                }
+                throw Exception(message)
             }
 
             return text

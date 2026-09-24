@@ -56,6 +56,14 @@
                         android:inputType="textPassword" />
 
                     <EditText
+                        android:id="@+id/confirmPasswordInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:hint="@string/hint_confirm_password"
+                        android:inputType="textPassword" />
+
+                    <EditText
                         android:id="@+id/fullNameInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

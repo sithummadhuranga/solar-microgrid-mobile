@@ -25,6 +25,7 @@
 
     <string name="hint_current_password">Current password</string>
     <string name="hint_new_password">New password</string>
+    <string name="hint_confirm_password">Confirm password</string>
 
     <string name="button_reserve">Reserve</string>
     <string name="button_save_changes">Save changes</string>
@@ -37,6 +38,8 @@
     <string name="button_logout">Log out</string>
 
     <string name="error_fill_required">Fill in all fields</string>
+    <string name="error_password_too_short">Password must be at least 8 characters</string>
+    <string name="error_passwords_dont_match">Passwords do not match</string>
     <string name="error_login_failed">Could not log in</string>
     <string name="error_register_failed">Could not register</string>
     <string name="error_could_not_save">Could not save the changes</string>
