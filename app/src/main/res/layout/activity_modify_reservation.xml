@@ -11,12 +11,16 @@
         android:text="@string/label_modify_reservation"
         android:textSize="20sp" />
 
-    <EditText
-        android:id="@+id/reservationIdInput"
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="@string/hint_reservation_id" />
+        android:text="@string/label_reservation" />
+
+    <Spinner
+        android:id="@+id/reservationSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <EditText
         android:id="@+id/scheduledTimeInput"
