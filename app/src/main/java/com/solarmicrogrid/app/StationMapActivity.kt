@@ -8,6 +8,7 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,7 +51,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // loads the layout, sets up the slot list and asks for the map
+    // loads the layout, sets up the slot list and the camera buttons, and asks for the map
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_station_map)
@@ -62,6 +63,8 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         val slotList = findViewById<RecyclerView>(R.id.slot_list)
         slotList.layoutManager = LinearLayoutManager(this)
         slotList.adapter = slotAdapter
+
+        findViewById<Button>(R.id.all_nodes_button).setOnClickListener { showAllNodes() }
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -183,8 +186,13 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     // fits the camera around the phone and its nearest node, or around every node when the location is unknown
     private fun fitCamera() {
         val here = userLocation
-        val points = if (here != null) listOf(here) + nearestTo(here, 1) else stations.map { LatLng(it.latitude, it.longitude) }
-        fitPoints(points)
+        if (here != null) fitPoints(listOf(here) + nearestTo(here, 1)) else showAllNodes()
+    }
+
+    // all nodes button, fits the camera around every node
+    private fun showAllNodes() {
+        if (stations.isEmpty()) return
+        fitPoints(stations.map { LatLng(it.latitude, it.longitude) })
     }
 
     // moves the camera so every point is on screen, or zooms on the point when there is only one
