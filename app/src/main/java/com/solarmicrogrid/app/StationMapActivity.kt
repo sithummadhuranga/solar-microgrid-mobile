@@ -350,7 +350,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun loadSlots(station: Station, quiet: Boolean = false) {
         Thread {
             try {
-                val json = getJson("/stations/${station.id}/slots")
+                val json = getJson("/stations/${station.id}/slots?upcoming=true")
                 val slots = EnergyBookingSlot.listFromJson(json)
                 runOnUiThread { showSlots(station.id, slots) }
             } catch (e: IOException) {
