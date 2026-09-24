@@ -78,7 +78,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
-    // the map is one of the operator's two tabs, but not one of the prosumer's, so a prosumer gets a back arrow instead
+    // shows the operator tabs, or a back arrow for a prosumer
     private fun setUpBottomNav() {
         val role = AppDatabase(this).session()?.role
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
@@ -96,7 +96,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // closes this screen when the back arrow in the toolbar is tapped, prosumer only, see setUpBottomNav
+    // closes the map when the back arrow is tapped
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
@@ -109,7 +109,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         finish()
     }
 
-    // checks the api for node changes every 10 seconds while the map is on screen, and once straight away on return
+    // starts the 10 second node refresh while the map is on screen
     override fun onResume() {
         super.onResume()
         refreshNow()
@@ -130,7 +130,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }, refreshMillis)
     }
 
-    // reloads the nodes and the slots of the selected node, without moving the camera or showing errors
+    // reloads the nodes and the selected node's slots without moving the camera
     private fun refreshNow() {
         if (!::map.isInitialized) return
         loadStations(quiet = true)
@@ -144,7 +144,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         outState.putBoolean("hasAskedLocation", hasAskedLocation)
     }
 
-    // keeps the map once it is ready, shows the zoom buttons, zooms in on a tapped node and loads the nodes
+    // sets up the map, the zoom buttons and marker taps, then loads the nodes
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.uiSettings.isZoomControlsEnabled = true
@@ -229,7 +229,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (here != null) fitPoints(listOf(here) + nearestTo(here, 1)) else showAllNodes()
     }
 
-    // fits the camera around the phone and its closest few nodes, the nearby button, reads the location again first
+    // nearby button, fits the camera around the phone and its closest nodes
     private fun showNearby() {
         if (stations.isEmpty()) return
         userLocation = readLocation() ?: userLocation
@@ -241,7 +241,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         fitPoints(listOf(here) + nearestTo(here, nearbyCount))
     }
 
-    // fits the camera around every node, the all nodes button
+    // all nodes button, fits the camera around every node
     private fun showAllNodes() {
         if (stations.isEmpty()) return
         fitPoints(stations.map { LatLng(it.latitude, it.longitude) })
@@ -271,7 +271,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             .map { LatLng(it.latitude, it.longitude) }
     }
 
-    // gets the active nodes from the api on a background thread, quiet skips the error message for background checks
+    // gets the active nodes from the api, quiet hides errors for the background refresh
     private fun loadStations(quiet: Boolean = false) {
         Thread {
             try {
@@ -286,7 +286,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }.start()
     }
 
-    // redraws one marker per node when the nodes changed, skips a node without a location, frames the camera only once
+    // redraws the markers when the nodes changed, frames the camera only the first time
     private fun showStations(json: String, list: List<Station>) {
         if (json == lastStationsJson) return
         lastStationsJson = json
@@ -310,7 +310,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // keeps the panel in step with the latest nodes, closes it when the selected node was deactivated or deleted
+    // updates the panel, or closes it when the selected node is gone
     private fun updateSelectedStation() {
         if (selectedStationId.isEmpty()) return
         val station = stations.find { it.id == selectedStationId }
@@ -346,7 +346,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             getString(R.string.station_hours, station.openingTime, station.closingTime)
     }
 
-    // gets the upcoming slots of a node from the api on a background thread, quiet skips the error message
+    // gets the upcoming slots of a node from the api, quiet hides errors
     private fun loadSlots(station: Station, quiet: Boolean = false) {
         Thread {
             try {
@@ -374,7 +374,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    // sends a GET with the logged in user's token and returns the body, throws the api message on failure
+    // sends a GET with the logged in user's token and returns the body
     private fun getJson(path: String): String {
         val token = AppDatabase(this).session()?.token
         return ApiClient(authToken = token).get(path)
