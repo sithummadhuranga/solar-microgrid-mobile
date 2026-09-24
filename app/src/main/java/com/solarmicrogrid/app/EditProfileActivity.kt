@@ -31,7 +31,7 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var confirmNewPasswordInput: EditText
 
     companion object {
-        // shortest password accepted, the api checks this again
+        // shortest password accepted
         private const val MIN_PASSWORD_LENGTH = 8
     }
 
@@ -118,8 +118,7 @@ class EditProfileActivity : AppCompatActivity() {
         }.start()
     }
 
-    // checks the fields are filled and the new password is strong enough, then sends the change
-    // request off the main thread
+    // checks the new password is strong enough, then sends the change off the main thread
     private fun changePassword() {
         val currentPassword = currentPasswordInput.text.toString().trim()
         val newPassword = newPasswordInput.text.toString().trim()
@@ -198,8 +197,7 @@ class EditProfileActivity : AppCompatActivity() {
         finish()
     }
 
-    // a session expiry means the account was deactivated or the token expired, go back to login
-    // instead of showing the message inline, any other error just shows on this screen
+    // a session expiry goes back to login instead of showing the message inline
     private fun handleApiError(e: Exception, fallback: String) {
         if (e is SessionExpiredException) {
             AppDatabase(this).clearSession()

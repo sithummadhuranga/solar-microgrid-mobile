@@ -17,7 +17,7 @@ class RegisterActivity : AppCompatActivity() {
     private val api = ApiClient()
 
     companion object {
-        // shortest password accepted, the api checks this again
+        // shortest password accepted
         private const val MIN_PASSWORD_LENGTH = 8
     }
 
@@ -37,7 +37,7 @@ class RegisterActivity : AppCompatActivity() {
         val errorText = findViewById<TextView>(R.id.errorText)
         val registerButton = findViewById<Button>(R.id.registerButton)
 
-        // checks the fields are filled and the password is strong enough, then sends the registration request
+        // checks the fields and the password strength, then sends the registration
         registerButton.setOnClickListener {
             val nic = nicInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
