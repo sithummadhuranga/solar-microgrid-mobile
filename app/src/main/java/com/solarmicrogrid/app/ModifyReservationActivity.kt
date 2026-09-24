@@ -2,37 +2,49 @@ package com.solarmicrogrid.app
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.solarmicrogrid.app.api.ApiClient
 import com.solarmicrogrid.app.api.SessionExpiredException
 import com.solarmicrogrid.app.data.AppDatabase
-import com.solarmicrogrid.app.model.EnergyReservation
+import java.util.Calendar
 
 // lets a prosumer change the scheduled time of one of their reservations, the api checks the 12 hour notice rule
 class ModifyReservationActivity : AppCompatActivity() {
 
     companion object {
-        private val TIME_FORMAT = Regex("""^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z$""")
+        const val EXTRA_RESERVATION_ID = "reservation_id"
+        const val EXTRA_STATION_NAME = "station_name"
+        const val EXTRA_SCHEDULED_TIME = "scheduled_time"
     }
 
-    private var reservations = listOf<EnergyReservation>()
+    private var reservationId = ""
     private var token = ""
-    private lateinit var reservationSpinner: Spinner
+    private var pickedTime: Calendar? = null
     private lateinit var errorText: TextView
     private lateinit var saveButton: Button
 
-    // sets up the modify reservation screen and loads the reservations to pick from
+    // sets up the modify reservation screen for the reservation picked on the bookings screen
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_modify_reservation)
 
-        reservationSpinner = findViewById(R.id.reservationSpinner)
+        reservationId = intent.getStringExtra(EXTRA_RESERVATION_ID) ?: ""
+        val stationName = intent.getStringExtra(EXTRA_STATION_NAME) ?: ""
+        val currentTime = TimeHelper.display(intent.getStringExtra(EXTRA_SCHEDULED_TIME) ?: "")
+        findViewById<TextView>(R.id.reservationInfo).text = stationName + "\n" + currentTime
+
         val scheduledTimeInput = findViewById<EditText>(R.id.scheduledTimeInput)
+
+        // opens the date and time pickers instead of typing the time
+        scheduledTimeInput.setOnClickListener {
+            TimeHelper.pick(this) { picked ->
+                pickedTime = picked
+                scheduledTimeInput.setText(TimeHelper.display(picked))
+            }
+        }
         errorText = findViewById(R.id.errorText)
         saveButton = findViewById(R.id.saveButton)
 
@@ -44,60 +56,18 @@ class ModifyReservationActivity : AppCompatActivity() {
         }
         token = session.token
 
-        // checks a reservation and the time are filled, then sends the update request
+        // checks the time is filled, then sends the update request
         saveButton.setOnClickListener {
-            val reservation = reservations.getOrNull(reservationSpinner.selectedItemPosition)
-            val scheduledTime = scheduledTimeInput.text.toString().trim()
+            val picked = pickedTime
 
-            if (reservation == null || scheduledTime.isEmpty()) {
+            if (picked == null) {
                 showError(getString(R.string.error_fill_required))
                 return@setOnClickListener
             }
 
-            if (!TIME_FORMAT.matches(scheduledTime)) {
-                showError(getString(R.string.error_time_format))
-                return@setOnClickListener
-            }
-
             errorText.visibility = TextView.GONE
-            saveChanges(reservation.id, scheduledTime)
+            saveChanges(reservationId, TimeHelper.toUtc(picked))
         }
-
-        loadReservations()
-    }
-
-    // asks the api for the caller's open reservations, off the main thread
-    private fun loadReservations() {
-        Thread {
-            try {
-                val list = EnergyReservation.listFromJson(
-                    ApiClient(authToken = token).get("/reservations/mine?state=pending,approved")
-                )
-                val names = AppDatabase(this).stations().associate { it.id to it.name }
-                runOnUiThread { showReservations(list, names) }
-            } catch (e: Exception) {
-                runOnUiThread { handleApiError(e) }
-            }
-        }.start()
-    }
-
-    // puts the reservations in the dropdown, the save button needs at least one
-    private fun showReservations(list: List<EnergyReservation>, names: Map<String, String>) {
-        reservations = list
-        val labels = list.map {
-            getString(R.string.reservation_option, names[it.stationId] ?: getString(R.string.label_node), shortTime(it.scheduledTime), it.state)
-        }
-        reservationSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, labels)
-        saveButton.isEnabled = list.isNotEmpty()
-
-        if (list.isEmpty()) {
-            showError(getString(R.string.message_no_reservations))
-        }
-    }
-
-    // cuts a utc time from the api down to date and minutes
-    private fun shortTime(utc: String): String {
-        return utc.take(16).replace('T', ' ')
     }
 
     // sends the update reservation request off the main thread

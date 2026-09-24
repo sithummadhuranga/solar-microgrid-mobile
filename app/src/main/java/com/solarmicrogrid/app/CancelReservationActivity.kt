@@ -3,31 +3,37 @@ package com.solarmicrogrid.app
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.solarmicrogrid.app.api.ApiClient
 import com.solarmicrogrid.app.api.SessionExpiredException
 import com.solarmicrogrid.app.data.AppDatabase
-import com.solarmicrogrid.app.model.EnergyReservation
 
 // lets a prosumer cancel one of their reservations, the api checks the 12 hour notice rule, a grid operator can also cancel one
 class CancelReservationActivity : AppCompatActivity() {
 
-    private var reservations = listOf<EnergyReservation>()
+    companion object {
+        const val EXTRA_RESERVATION_ID = "reservation_id"
+        const val EXTRA_STATION_NAME = "station_name"
+        const val EXTRA_SCHEDULED_TIME = "scheduled_time"
+    }
+
+    private var reservationId = ""
     private var token = ""
-    private lateinit var reservationSpinner: Spinner
     private lateinit var errorText: TextView
     private lateinit var cancelButton: Button
 
-    // sets up the cancel reservation screen and loads the reservations to pick from
+    // sets up the cancel reservation screen for the reservation picked on the bookings screen
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cancel_reservation)
 
-        reservationSpinner = findViewById(R.id.reservationSpinner)
+        reservationId = intent.getStringExtra(EXTRA_RESERVATION_ID) ?: ""
+        val stationName = intent.getStringExtra(EXTRA_STATION_NAME) ?: ""
+        val currentTime = TimeHelper.display(intent.getStringExtra(EXTRA_SCHEDULED_TIME) ?: "")
+        findViewById<TextView>(R.id.reservationInfo).text = stationName + "\n" + currentTime
+
         errorText = findViewById(R.id.errorText)
         cancelButton = findViewById(R.id.cancelButton)
 
@@ -39,54 +45,11 @@ class CancelReservationActivity : AppCompatActivity() {
         }
         token = session.token
 
-        // checks a reservation is picked, then asks to confirm before cancelling
+        // asks to confirm before cancelling
         cancelButton.setOnClickListener {
-            val reservation = reservations.getOrNull(reservationSpinner.selectedItemPosition)
-
-            if (reservation == null) {
-                showError(getString(R.string.error_fill_required))
-                return@setOnClickListener
-            }
-
             errorText.visibility = TextView.GONE
-            confirmCancel(reservation.id)
+            confirmCancel(reservationId)
         }
-
-        loadReservations()
-    }
-
-    // asks the api for the caller's open reservations, off the main thread
-    private fun loadReservations() {
-        Thread {
-            try {
-                val list = EnergyReservation.listFromJson(
-                    ApiClient(authToken = token).get("/reservations/mine?state=pending,approved")
-                )
-                val names = AppDatabase(this).stations().associate { it.id to it.name }
-                runOnUiThread { showReservations(list, names) }
-            } catch (e: Exception) {
-                runOnUiThread { handleApiError(e) }
-            }
-        }.start()
-    }
-
-    // puts the reservations in the dropdown, the cancel button needs at least one
-    private fun showReservations(list: List<EnergyReservation>, names: Map<String, String>) {
-        reservations = list
-        val labels = list.map {
-            getString(R.string.reservation_option, names[it.stationId] ?: getString(R.string.label_node), shortTime(it.scheduledTime), it.state)
-        }
-        reservationSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, labels)
-        cancelButton.isEnabled = list.isNotEmpty()
-
-        if (list.isEmpty()) {
-            showError(getString(R.string.message_no_reservations))
-        }
-    }
-
-    // cuts a utc time from the api down to date and minutes
-    private fun shortTime(utc: String): String {
-        return utc.take(16).replace('T', ' ')
     }
 
     // shows a confirm dialog before sending the cancel request

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.EditText
+import android.widget.PopupMenu
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -21,10 +22,11 @@ import java.net.URLEncoder
 // shows the reservations that have not happened yet, with search and a state filter
 class ReservationListActivity : AppCompatActivity() {
 
-    private val adapter = ReservationAdapter()
+    private val adapter = ReservationAdapter { anchor, reservation -> showActions(anchor, reservation) }
     private lateinit var searchInput: EditText
     private lateinit var stateFilter: Spinner
     private lateinit var messageText: TextView
+    private var stationNames = mapOf<String, String>()
 
     // sets up the screen, the list loads when the spinner reports its first selection
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,6 +92,7 @@ class ReservationListActivity : AppCompatActivity() {
                 val reservations = EnergyReservation.listFromJson(api.get(path))
                 val names = database.stations().associate { it.id to it.name }
                 runOnUiThread {
+                    stationNames = names
                     adapter.setStationNames(names)
                     adapter.setReservations(reservations)
                     if (reservations.isEmpty()) {
@@ -105,6 +108,39 @@ class ReservationListActivity : AppCompatActivity() {
                 }
             }
         }.start()
+    }
+
+    // opens the three dots menu of one row, the qr option only shows for an approved reservation
+    private fun showActions(anchor: View, reservation: EnergyReservation) {
+        val menu = PopupMenu(this, anchor)
+        menu.menuInflater.inflate(R.menu.reservation_actions, menu.menu)
+        menu.menu.findItem(R.id.action_qr).isVisible = !reservation.qrData.isNullOrEmpty()
+
+        menu.setOnMenuItemClickListener { item ->
+            val stationName = stationNames[reservation.stationId] ?: getString(R.string.label_node)
+            when (item.itemId) {
+                R.id.action_modify -> startActivity(
+                    Intent(this, ModifyReservationActivity::class.java)
+                        .putExtra(ModifyReservationActivity.EXTRA_RESERVATION_ID, reservation.id)
+                        .putExtra(ModifyReservationActivity.EXTRA_STATION_NAME, stationName)
+                        .putExtra(ModifyReservationActivity.EXTRA_SCHEDULED_TIME, reservation.scheduledTime)
+                )
+                R.id.action_cancel -> startActivity(
+                    Intent(this, CancelReservationActivity::class.java)
+                        .putExtra(CancelReservationActivity.EXTRA_RESERVATION_ID, reservation.id)
+                        .putExtra(CancelReservationActivity.EXTRA_STATION_NAME, stationName)
+                        .putExtra(CancelReservationActivity.EXTRA_SCHEDULED_TIME, reservation.scheduledTime)
+                )
+                R.id.action_qr -> startActivity(
+                    Intent(this, ReservationQrActivity::class.java)
+                        .putExtra(ReservationQrActivity.EXTRA_QR_DATA, reservation.qrData)
+                        .putExtra(ReservationQrActivity.EXTRA_STATION_NAME, stationName)
+                        .putExtra(ReservationQrActivity.EXTRA_SCHEDULED_TIME, reservation.scheduledTime)
+                )
+            }
+            true
+        }
+        menu.show()
     }
 
     // builds the query, this screen only asks for reservations that are still open
