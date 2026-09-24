@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -42,6 +44,8 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var stations: List<Station> = emptyList()
     private var userLocation: LatLng? = null
     private val nearbyCount = 3
+    private val refreshHandler = Handler(Looper.getMainLooper())
+    private val refreshMillis = 10_000L
     private var lastStationsJson = ""
     private var hasFramedCamera = false
 
@@ -105,10 +109,25 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         finish()
     }
 
-    // reloads the nodes when the map comes back on screen
+    // starts the 10 second node refresh while the map is on screen
     override fun onResume() {
         super.onResume()
         refreshNow()
+        scheduleRefresh()
+    }
+
+    // stops the checks when the map is no longer on screen
+    override fun onPause() {
+        super.onPause()
+        refreshHandler.removeCallbacksAndMessages(null)
+    }
+
+    // runs refreshNow after the refresh interval, then queues the next one
+    private fun scheduleRefresh() {
+        refreshHandler.postDelayed({
+            refreshNow()
+            scheduleRefresh()
+        }, refreshMillis)
     }
 
     // reloads the nodes and the selected node's slots without moving the camera
