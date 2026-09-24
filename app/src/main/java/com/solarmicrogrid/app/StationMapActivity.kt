@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -42,6 +44,10 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var stations: List<Station> = emptyList()
     private var userLocation: LatLng? = null
     private val nearbyCount = 3
+    private val refreshHandler = Handler(Looper.getMainLooper())
+    private val refreshMillis = 10_000L
+    private var lastStationsJson = ""
+    private var hasFramedCamera = false
 
     // after a screen rotation the answer can arrive before the map is ready, onMapReady then centres it
     private val locationPermission = registerForActivityResult(
@@ -101,6 +107,35 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         startActivity(Intent(this, screen))
         overridePendingTransition(0, 0)
         finish()
+    }
+
+    // checks the api for node changes every 10 seconds while the map is on screen, and once straight away on return
+    override fun onResume() {
+        super.onResume()
+        refreshNow()
+        scheduleRefresh()
+    }
+
+    // stops the checks when the map is no longer on screen
+    override fun onPause() {
+        super.onPause()
+        refreshHandler.removeCallbacksAndMessages(null)
+    }
+
+    // runs refreshNow after the refresh interval, then queues the next one
+    private fun scheduleRefresh() {
+        refreshHandler.postDelayed({
+            refreshNow()
+            scheduleRefresh()
+        }, refreshMillis)
+    }
+
+    // reloads the nodes and the slots of the selected node, without moving the camera or showing errors
+    private fun refreshNow() {
+        if (!::map.isInitialized) return
+        loadStations(quiet = true)
+        val selected = stations.find { it.id == selectedStationId }
+        if (selected != null) loadSlots(selected, quiet = true)
     }
 
     // keeps whether the location question was asked, so a rotation does not ask again
@@ -221,24 +256,28 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             .map { LatLng(it.latitude, it.longitude) }
     }
 
-    // gets the active nodes from the api on a background thread
-    private fun loadStations() {
+    // gets the active nodes from the api on a background thread, quiet skips the error message for background checks
+    private fun loadStations(quiet: Boolean = false) {
         Thread {
             try {
                 val json = getJson("/stations?active=true")
                 val stations = Station.listFromJson(json)
-                runOnUiThread { showStations(stations) }
+                runOnUiThread { showStations(json, stations) }
             } catch (e: IOException) {
-                runOnUiThread { showError(getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(getString(R.string.server_unreachable)) }
             } catch (e: Exception) {
-                runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
             }
         }.start()
     }
 
-    // adds one marker per node, titled with the node name, skips a node without a location, then frames the camera
-    private fun showStations(list: List<Station>) {
+    // redraws one marker per node when the nodes changed, skips a node without a location, frames the camera only once
+    private fun showStations(json: String, list: List<Station>) {
+        if (json == lastStationsJson) return
+        lastStationsJson = json
         stations = list.filter { !it.latitude.isNaN() && !it.longitude.isNaN() }
+
+        map.clear()
         for (station in stations) {
             val marker = map.addMarker(
                 MarkerOptions()
@@ -246,13 +285,40 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     .title(station.name)
             )
             marker?.tag = station
+            if (station.id == selectedStationId) marker?.showInfoWindow()
         }
-        if (stations.isNotEmpty()) fitCamera()
+        updateSelectedStation()
+
+        if (!hasFramedCamera && stations.isNotEmpty()) {
+            hasFramedCamera = true
+            fitCamera()
+        }
     }
 
-    // fills the panel under the map with the selected node
+    // keeps the panel in step with the latest nodes, closes it when the selected node was deactivated or deleted
+    private fun updateSelectedStation() {
+        if (selectedStationId.isEmpty()) return
+        val station = stations.find { it.id == selectedStationId }
+        if (station == null) {
+            selectedStationId = ""
+            findViewById<View>(R.id.details_panel).visibility = View.GONE
+            showError(getString(R.string.station_removed))
+        } else {
+            fillDetails(station)
+        }
+    }
+
+    // opens the panel under the map for the tapped node
     private fun showStationDetails(station: Station) {
         selectedStationId = station.id
+        fillDetails(station)
+        slotAdapter.setItems(emptyList())
+        findViewById<View>(R.id.no_slots_text).visibility = View.GONE
+        findViewById<View>(R.id.details_panel).visibility = View.VISIBLE
+    }
+
+    // writes the node details into the panel
+    private fun fillDetails(station: Station) {
         val capacity = station.capacityKwh.toBigDecimal().stripTrailingZeros().toPlainString()
 
         findViewById<TextView>(R.id.station_name).text = station.name
@@ -263,23 +329,19 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             getString(R.string.station_slot_count, station.batterySlotCount)
         findViewById<TextView>(R.id.station_hours).text =
             getString(R.string.station_hours, station.openingTime, station.closingTime)
-
-        slotAdapter.setItems(emptyList())
-        findViewById<View>(R.id.no_slots_text).visibility = View.GONE
-        findViewById<View>(R.id.details_panel).visibility = View.VISIBLE
     }
 
-    // gets the upcoming slots of a node from the api on a background thread
-    private fun loadSlots(station: Station) {
+    // gets the upcoming slots of a node from the api on a background thread, quiet skips the error message
+    private fun loadSlots(station: Station, quiet: Boolean = false) {
         Thread {
             try {
                 val json = getJson("/stations/${station.id}/slots")
                 val slots = EnergyBookingSlot.listFromJson(json)
                 runOnUiThread { showSlots(station.id, slots) }
             } catch (e: IOException) {
-                runOnUiThread { showError(getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(getString(R.string.server_unreachable)) }
             } catch (e: Exception) {
-                runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
             }
         }.start()
     }
