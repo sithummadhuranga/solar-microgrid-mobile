@@ -269,10 +269,24 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             marker?.tag = station
             if (station.id == selectedStationId) marker?.showInfoWindow()
         }
+        updateSelectedStation()
 
         if (!hasFramedCamera && stations.isNotEmpty()) {
             hasFramedCamera = true
             fitCamera()
+        }
+    }
+
+    // updates the panel, or closes it when the selected node is gone
+    private fun updateSelectedStation() {
+        if (selectedStationId.isEmpty()) return
+        val station = stations.find { it.id == selectedStationId }
+        if (station == null) {
+            selectedStationId = ""
+            findViewById<View>(R.id.details_panel).visibility = View.GONE
+            showError(getString(R.string.station_removed))
+        } else {
+            fillDetails(station)
         }
     }
 

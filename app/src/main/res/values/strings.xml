@@ -110,6 +110,7 @@
     <string name="station_hours">Opening hours: %1$s to %2$s</string>
     <string name="upcoming_slots">Upcoming slots</string>
     <string name="no_upcoming_slots">No upcoming slots</string>
+    <string name="station_removed">This node is no longer available</string>
     <string name="slot_time">%1$s to %2$s</string>
     <string name="slot_free">Free battery storage slots: %1$d of %2$d</string>
 </resources>
