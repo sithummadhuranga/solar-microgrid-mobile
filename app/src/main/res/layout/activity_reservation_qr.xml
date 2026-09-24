@@ -12,6 +12,12 @@
         android:text="@string/label_reservation_qr"
         android:textSize="20sp" />
 
+    <Spinner
+        android:id="@+id/reservationSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" />
+
     <ImageView
         android:id="@+id/qrImage"
         android:layout_width="250dp"

@@ -3,10 +3,7 @@
     <string name="app_name">Solar Microgrid</string>
 
     <string name="hint_nic">NIC</string>
-    <string name="hint_station_id">Station id</string>
-    <string name="hint_slot_id">Slot id</string>
     <string name="hint_scheduled_time">Scheduled time (within 7 days)</string>
-    <string name="hint_reservation_id">Reservation id</string>
     <string name="hint_identifier">NIC or email</string>
     <string name="hint_password">Password</string>
     <string name="hint_full_name">Full name</string>
@@ -14,6 +11,13 @@
     <string name="hint_address">Address</string>
 
     <string name="label_reserve_slot">Reserve slot</string>
+    <string name="label_node">Microgrid node</string>
+    <string name="label_reservation">Reservation</string>
+    <string name="reservation_option">%1$s, %2$s UTC, %3$s</string>
+    <string name="button_view_qr">View QR code</string>
+    <string name="label_slot">Slot</string>
+    <string name="slot_option">%1$s to %2$s UTC, free %3$d of %4$d</string>
+    <string name="message_no_nodes">No microgrid nodes to book</string>
     <string name="label_modify_reservation">Modify reservation</string>
     <string name="label_cancel_reservation">Cancel reservation</string>
     <string name="label_reservation_summary">Reservation summary</string>
@@ -38,6 +42,7 @@
     <string name="button_logout">Log out</string>
 
     <string name="error_fill_required">Fill in all fields</string>
+    <string name="error_time_format">Time must look like 2026-09-26T10:00:00Z</string>
     <string name="error_password_too_short">Password must be at least 8 characters</string>
     <string name="error_passwords_dont_match">Passwords do not match</string>
     <string name="error_login_failed">Could not log in</string>
