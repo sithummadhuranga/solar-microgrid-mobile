@@ -162,11 +162,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // uses the location permission if granted, otherwise asks for it once
     private fun centreMap() {
-        val hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        val hasCoarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        if (hasFine || hasCoarse) {
+        if (hasLocationPermission()) {
             showMyLocation()
         } else if (hasAskedLocation) {
             showColombo()
@@ -178,23 +174,40 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // turns on the my-location layer and moves to the last known location, or colombo if there is none
+    // checks whether the fine or coarse location permission was granted
+    private fun hasLocationPermission(): Boolean {
+        val hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        return hasFine || hasCoarse
+    }
+
+    // reads the newest last known location from every provider, null when there is none or no permission
     @SuppressLint("MissingPermission")
-    private fun showMyLocation() {
-        map.isMyLocationEnabled = true
+    private fun readLocation(): LatLng? {
+        if (!hasLocationPermission()) return null
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         var best: Location? = null
         for (provider in locationManager.getProviders(true)) {
             val location = locationManager.getLastKnownLocation(provider) ?: continue
             if (best == null || location.time > best.time) best = location
         }
-        if (best == null) {
+        return best?.let { LatLng(it.latitude, it.longitude) }
+    }
+
+    // turns on the my-location layer and moves to the last known location, or colombo if there is none
+    @SuppressLint("MissingPermission")
+    private fun showMyLocation() {
+        map.isMyLocationEnabled = true
+        val here = readLocation()
+        if (here == null) {
             showColombo()
             return
         }
-        userLocation = LatLng(best.latitude, best.longitude)
+        userLocation = here
         if (stations.isEmpty()) {
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation!!, 12f))
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(here, 12f))
         } else {
             fitCamera()
         }
@@ -211,13 +224,15 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // fits the camera around the phone and its nearest node, or around every node when the location is unknown
     private fun fitCamera() {
+        userLocation = readLocation() ?: userLocation
         val here = userLocation
         if (here != null) fitPoints(listOf(here) + nearestTo(here, 1)) else showAllNodes()
     }
 
-    // fits the camera around the phone and its closest few nodes, the nearby button
+    // fits the camera around the phone and its closest few nodes, the nearby button, reads the location again first
     private fun showNearby() {
         if (stations.isEmpty()) return
+        userLocation = readLocation() ?: userLocation
         val here = userLocation
         if (here == null) {
             showError(getString(R.string.location_unknown))
