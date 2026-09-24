@@ -42,6 +42,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var stations: List<Station> = emptyList()
     private var userLocation: LatLng? = null
     private val nearbyCount = 3
+    private var lastStationsJson = ""
     private var hasFramedCamera = false
 
     // after a screen rotation the answer can arrive before the map is ready, onMapReady then centres it
@@ -243,7 +244,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             try {
                 val json = getJson("/stations?active=true")
                 val stations = Station.listFromJson(json)
-                runOnUiThread { showStations(stations) }
+                runOnUiThread { showStations(json, stations) }
             } catch (e: IOException) {
                 if (!quiet) runOnUiThread { showError(getString(R.string.server_unreachable)) }
             } catch (e: Exception) {
@@ -252,8 +253,10 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }.start()
     }
 
-    // redraws the markers from the latest nodes, frames the camera only the first time
-    private fun showStations(list: List<Station>) {
+    // redraws the markers when the nodes changed, frames the camera only the first time
+    private fun showStations(json: String, list: List<Station>) {
+        if (json == lastStationsJson) return
+        lastStationsJson = json
         stations = list.filter { !it.latitude.isNaN() && !it.longitude.isNaN() }
 
         map.clear()
