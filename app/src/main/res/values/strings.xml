@@ -1,6 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Solar Microgrid</string>
+
+    <string name="hint_nic">NIC</string>
+    <string name="hint_station_id">Station id</string>
+    <string name="hint_slot_id">Slot id</string>
+    <string name="hint_scheduled_time">Scheduled time (within 7 days)</string>
+    <string name="hint_reservation_id">Reservation id</string>
+    <string name="hint_identifier">NIC or email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_full_name">Full name</string>
+    <string name="hint_phone">Phone</string>
+    <string name="hint_address">Address</string>
+
+    <string name="label_reserve_slot">Reserve slot</string>
+    <string name="label_modify_reservation">Modify reservation</string>
+    <string name="label_cancel_reservation">Cancel reservation</string>
+    <string name="label_reservation_summary">Reservation summary</string>
+    <string name="label_reservation_qr">Reservation QR code</string>
+    <string name="label_welcome_back">Welcome back</string>
+    <string name="label_register">Register as a prosumer</string>
+    <string name="label_edit_profile">My profile</string>
+    <string name="label_change_password">Change password</string>
+
+    <string name="hint_current_password">Current password</string>
+    <string name="hint_new_password">New password</string>
+
+    <string name="button_reserve">Reserve</string>
+    <string name="button_save_changes">Save changes</string>
+    <string name="button_cancel">Cancel reservation</string>
+    <string name="button_login">Log in</string>
+    <string name="button_go_to_register">New prosumer, register here</string>
+    <string name="button_register">Register</string>
+    <string name="button_request_deactivation">Request account deactivation</string>
+    <string name="button_change_password">Change password</string>
+    <string name="button_logout">Log out</string>
+
+    <string name="error_fill_required">Fill in all fields</string>
+    <string name="error_login_failed">Could not log in</string>
+    <string name="error_register_failed">Could not register</string>
+    <string name="error_could_not_save">Could not save the changes</string>
+    <string name="message_registered">Registered, wait for a backoffice officer to activate the account</string>
+    <string name="message_profile_saved">Profile saved</string>
+    <string name="message_password_changed">Password changed</string>
+    <string name="message_deactivation_requested">Deactivation requested, a backoffice officer will act on it</string>
+    <string name="confirm_cancel_reservation">Cancel this reservation</string>
+    <string name="confirm_deactivate_account">Request deactivation of this account</string>
+
+    <string name="nav_dashboard">Home</string>
+    <string name="nav_reserve">Reserve</string>
+    <string name="nav_bookings">Bookings</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_map">Map</string>
+
+    <string name="message_reservation_saved">Reservation saved</string>
+    <string name="message_reservation_updated">Reservation updated</string>
+    <string name="message_reservation_cancelled">Reservation cancelled</string>
+    <string name="label_reservation_id_prefix">Reservation id: </string>
+    <string name="label_state_prefix">State: </string>
+    <string name="error_no_qr_yet">No QR code yet, the reservation is not approved</string>
+
+    <string name="label_my_reservations">My reservations</string>
+    <string name="label_reservation_history">Reservation history</string>
+    <string name="hint_search_reservations">Search</string>
+    <string name="label_station_prefix">Microgrid node: </string>
+    <string name="label_slot_prefix">Slot: </string>
+    <string name="label_scheduled_prefix">Scheduled: </string>
+    <string name="message_no_reservations">No reservations to show</string>
+    <string name="message_not_logged_in">Log in to see your reservations</string>
+    <string name="error_could_not_load">Could not load reservations</string>
+
+    <string name="label_dashboard">Dashboard</string>
+    <string name="label_pending_reservations">Pending reservations</string>
+    <string name="label_approved_future">Approved and still to come</string>
+    <string name="error_could_not_load_counts">Could not load the counts</string>
+
+    <string name="label_operator_home">Operator home</string>
+    <string name="button_scan_qr">Scan QR code</string>
+    <string name="label_scan_prompt">Point the camera at the prosumer QR code</string>
+    <string name="error_camera_needed">Camera permission is needed to scan</string>
+    <string name="label_verify_reservation">Verify reservation</string>
+    <string name="button_mark_done">Mark done</string>
+    <string name="error_qr_not_valid">Could not verify this QR code</string>
+    <string name="message_transfer_done">Energy transfer finished</string>
+    <string name="error_could_not_complete">Could not finish the transfer</string>
+
+    <string-array name="current_states">
+        <item>All</item>
+        <item>Pending</item>
+        <item>Approved</item>
+    </string-array>
+
+    <string-array name="history_states">
+        <item>All</item>
+        <item>Done</item>
+        <item>Cancelled</item>
+    </string-array>
+
     <string name="station_map_title">Microgrid nodes</string>
     <string name="open_station_map">Microgrid nodes map</string>
     <string name="server_unreachable">Could not reach the server</string>

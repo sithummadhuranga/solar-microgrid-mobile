@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- allows plain http to the local dev api only, see D-11 in PROJECT_SCOPE.md -->
+<!-- allows plain http to the local dev api only -->
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">10.0.2.2</domain>

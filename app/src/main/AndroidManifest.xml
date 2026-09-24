@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
@@ -18,7 +19,7 @@
             android:value="${MAPS_API_KEY}" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,6 +27,18 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".RegisterActivity" android:exported="false" />
+        <activity android:name=".EditProfileActivity" android:exported="false" />
+        <activity android:name=".ReserveSlotActivity" android:exported="false" />
+        <activity android:name=".ModifyReservationActivity" android:exported="false" />
+        <activity android:name=".CancelReservationActivity" android:exported="false" />
+        <activity android:name=".ReservationSummaryActivity" android:exported="false" />
+        <activity android:name=".ReservationQrActivity" android:exported="false" />
+        <activity android:name=".ReservationListActivity" android:exported="false" />
+        <activity android:name=".ReservationHistoryActivity" android:exported="false" />
+        <activity android:name=".ProsumerDashboardActivity" android:exported="false" />
+        <activity android:name=".OperatorHomeActivity" android:exported="false" />
+        <activity android:name=".VerifyReservationActivity" android:exported="false" />
         <activity
             android:name=".StationMapActivity"
             android:exported="false" />
