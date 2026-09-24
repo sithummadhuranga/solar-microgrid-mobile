@@ -187,6 +187,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // fits the camera around the phone and its nearest node, or around every node when the location is unknown
     private fun fitCamera() {
+        userLocation = readLocation() ?: userLocation
         val here = userLocation
         if (here != null) fitPoints(listOf(here) + nearestTo(here, 1)) else showAllNodes()
     }
@@ -194,6 +195,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     // nearby button, fits the camera around the phone and its closest nodes
     private fun showNearby() {
         if (stations.isEmpty()) return
+        userLocation = readLocation() ?: userLocation
         val here = userLocation
         if (here == null) {
             showError(getString(R.string.location_unknown))
