@@ -100,6 +100,14 @@
                 android:hint="@string/hint_new_password"
                 android:inputType="textPassword" />
 
+            <EditText
+                android:id="@+id/confirmNewPasswordInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="@string/hint_confirm_password"
+                android:inputType="textPassword" />
+
             <Button
                 android:id="@+id/changePasswordButton"
                 android:layout_width="match_parent"
