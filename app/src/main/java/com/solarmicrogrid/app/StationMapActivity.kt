@@ -78,7 +78,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
-    // the map is one of the operator's two tabs, but not one of the prosumer's, so a prosumer gets a back arrow instead
+    // shows the operator tabs, or a back arrow for a prosumer
     private fun setUpBottomNav() {
         val role = AppDatabase(this).session()?.role
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
@@ -96,7 +96,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // closes this screen when the back arrow in the toolbar is tapped, prosumer only, see setUpBottomNav
+    // closes the map when the back arrow is tapped
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
@@ -374,7 +374,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    // sends a GET with the logged in user's token and returns the body, throws the api message on failure
+    // sends a GET with the logged in user's token and returns the body
     private fun getJson(path: String): String {
         val token = AppDatabase(this).session()?.token
         return ApiClient(authToken = token).get(path)
