@@ -67,40 +67,47 @@
                 android:id="@+id/station_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1" />
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:textColor="@color/solar_green_dark" />
 
             <TextView
                 android:id="@+id/station_address"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@color/black" />
 
             <TextView
                 android:id="@+id/station_capacity"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@color/black" />
 
             <TextView
                 android:id="@+id/station_slot_count"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@color/black" />
 
             <TextView
                 android:id="@+id/station_hours"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@color/black" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="8dp"
                 android:text="@string/upcoming_slots"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2" />
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
+                android:textColor="@color/solar_green_dark" />
 
             <TextView
                 android:id="@+id/no_slots_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/no_upcoming_slots"
+                android:textColor="@color/black"
                 android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
