@@ -3,5 +3,6 @@
     <color name="solar_green">#2E7D32</color>
     <color name="solar_green_dark">#1B5E20</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
     <color name="screen_background">#F2F4F2</color>
 </resources>

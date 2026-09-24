@@ -7,7 +7,10 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,6 +43,11 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var hasAskedLocation = false
     private var stations: List<Station> = emptyList()
     private var userLocation: LatLng? = null
+    private val nearbyCount = 3
+    private val refreshHandler = Handler(Looper.getMainLooper())
+    private val refreshMillis = 10_000L
+    private var lastStationsJson = ""
+    private var hasFramedCamera = false
 
     // after a screen rotation the answer can arrive before the map is ready, onMapReady then centres it
     private val locationPermission = registerForActivityResult(
@@ -50,7 +58,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // loads the layout, sets up the slot list and asks for the map
+    // loads the layout, sets up the slot list and the camera buttons, and asks for the map
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_station_map)
@@ -63,11 +71,14 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         slotList.layoutManager = LinearLayoutManager(this)
         slotList.adapter = slotAdapter
 
+        findViewById<Button>(R.id.nearby_button).setOnClickListener { showNearby() }
+        findViewById<Button>(R.id.all_nodes_button).setOnClickListener { showAllNodes() }
+
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
-    // the map is one of the operator's two tabs, but not one of the prosumer's, so a prosumer gets a back arrow instead
+    // shows the operator tabs, or a back arrow for a prosumer
     private fun setUpBottomNav() {
         val role = AppDatabase(this).session()?.role
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
@@ -85,7 +96,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // closes this screen when the back arrow in the toolbar is tapped, prosumer only, see setUpBottomNav
+    // closes the map when the back arrow is tapped
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
@@ -98,20 +109,52 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         finish()
     }
 
+    // starts the 10 second node refresh while the map is on screen
+    override fun onResume() {
+        super.onResume()
+        refreshNow()
+        scheduleRefresh()
+    }
+
+    // stops the checks when the map is no longer on screen
+    override fun onPause() {
+        super.onPause()
+        refreshHandler.removeCallbacksAndMessages(null)
+    }
+
+    // runs refreshNow after the refresh interval, then queues the next one
+    private fun scheduleRefresh() {
+        refreshHandler.postDelayed({
+            refreshNow()
+            scheduleRefresh()
+        }, refreshMillis)
+    }
+
+    // reloads the nodes and the selected node's slots without moving the camera
+    private fun refreshNow() {
+        if (!::map.isInitialized) return
+        loadStations(quiet = true)
+        val selected = stations.find { it.id == selectedStationId }
+        if (selected != null) loadSlots(selected, quiet = true)
+    }
+
     // keeps whether the location question was asked, so a rotation does not ask again
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("hasAskedLocation", hasAskedLocation)
     }
 
-    // keeps the map once it is ready, listens for marker taps and loads the nodes
+    // sets up the map, the zoom buttons and marker taps, then loads the nodes
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+        map.uiSettings.isZoomControlsEnabled = true
         map.setOnMarkerClickListener { marker ->
             val station = marker.tag as? Station ?: return@setOnMarkerClickListener false
             showStationDetails(station)
             loadSlots(station)
-            false
+            marker.showInfoWindow()
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 14f))
+            true
         }
         centreMap()
         loadStations()
@@ -119,11 +162,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // uses the location permission if granted, otherwise asks for it once
     private fun centreMap() {
-        val hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        val hasCoarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        if (hasFine || hasCoarse) {
+        if (hasLocationPermission()) {
             showMyLocation()
         } else if (hasAskedLocation) {
             showColombo()
@@ -135,23 +174,40 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // turns on the my-location layer and moves to the last known location, or colombo if there is none
+    // checks whether the fine or coarse location permission was granted
+    private fun hasLocationPermission(): Boolean {
+        val hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        return hasFine || hasCoarse
+    }
+
+    // reads the newest last known location from every provider, null when there is none or no permission
     @SuppressLint("MissingPermission")
-    private fun showMyLocation() {
-        map.isMyLocationEnabled = true
+    private fun readLocation(): LatLng? {
+        if (!hasLocationPermission()) return null
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         var best: Location? = null
         for (provider in locationManager.getProviders(true)) {
             val location = locationManager.getLastKnownLocation(provider) ?: continue
             if (best == null || location.time > best.time) best = location
         }
-        if (best == null) {
+        return best?.let { LatLng(it.latitude, it.longitude) }
+    }
+
+    // turns on the my-location layer and moves to the last known location, or colombo if there is none
+    @SuppressLint("MissingPermission")
+    private fun showMyLocation() {
+        map.isMyLocationEnabled = true
+        val here = readLocation()
+        if (here == null) {
             showColombo()
             return
         }
-        userLocation = LatLng(best.latitude, best.longitude)
+        userLocation = here
         if (stations.isEmpty()) {
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation!!, 12f))
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(here, 12f))
         } else {
             fitCamera()
         }
@@ -168,8 +224,31 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // fits the camera around the phone and its nearest node, or around every node when the location is unknown
     private fun fitCamera() {
+        userLocation = readLocation() ?: userLocation
         val here = userLocation
-        val points = if (here != null) listOf(here, nearestTo(here)) else stations.map { LatLng(it.latitude, it.longitude) }
+        if (here != null) fitPoints(listOf(here) + nearestTo(here, 1)) else showAllNodes()
+    }
+
+    // nearby button, fits the camera around the phone and its closest nodes
+    private fun showNearby() {
+        if (stations.isEmpty()) return
+        userLocation = readLocation() ?: userLocation
+        val here = userLocation
+        if (here == null) {
+            showError(getString(R.string.location_unknown))
+            return
+        }
+        fitPoints(listOf(here) + nearestTo(here, nearbyCount))
+    }
+
+    // all nodes button, fits the camera around every node
+    private fun showAllNodes() {
+        if (stations.isEmpty()) return
+        fitPoints(stations.map { LatLng(it.latitude, it.longitude) })
+    }
+
+    // moves the camera so every point is on screen, or zooms on the point when there is only one
+    private fun fitPoints(points: List<LatLng>) {
         if (points.distinct().size == 1) {
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(points[0], 12f))
             return
@@ -180,39 +259,40 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), padding))
     }
 
-    // finds the position of the node closest to a point, used only to frame the camera
-    private fun nearestTo(point: LatLng): LatLng {
-        var nearest = stations[0]
-        var nearestDistance = Float.MAX_VALUE
+    // finds the positions of the nodes closest to a point, used only to frame the camera
+    private fun nearestTo(point: LatLng, count: Int): List<LatLng> {
         val result = FloatArray(1)
-        for (station in stations) {
-            Location.distanceBetween(point.latitude, point.longitude, station.latitude, station.longitude, result)
-            if (result[0] < nearestDistance) {
-                nearestDistance = result[0]
-                nearest = station
+        return stations
+            .sortedBy { station ->
+                Location.distanceBetween(point.latitude, point.longitude, station.latitude, station.longitude, result)
+                result[0]
             }
-        }
-        return LatLng(nearest.latitude, nearest.longitude)
+            .take(count)
+            .map { LatLng(it.latitude, it.longitude) }
     }
 
-    // gets the active nodes from the api on a background thread
-    private fun loadStations() {
+    // gets the active nodes from the api, quiet hides errors for the background refresh
+    private fun loadStations(quiet: Boolean = false) {
         Thread {
             try {
                 val json = getJson("/stations?active=true")
                 val stations = Station.listFromJson(json)
-                runOnUiThread { showStations(stations) }
+                runOnUiThread { showStations(json, stations) }
             } catch (e: IOException) {
-                runOnUiThread { showError(getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(getString(R.string.server_unreachable)) }
             } catch (e: Exception) {
-                runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
             }
         }.start()
     }
 
-    // adds one marker per node, titled with the node name, skips a node without a location, then frames the camera
-    private fun showStations(list: List<Station>) {
+    // redraws the markers when the nodes changed, frames the camera only the first time
+    private fun showStations(json: String, list: List<Station>) {
+        if (json == lastStationsJson) return
+        lastStationsJson = json
         stations = list.filter { !it.latitude.isNaN() && !it.longitude.isNaN() }
+
+        map.clear()
         for (station in stations) {
             val marker = map.addMarker(
                 MarkerOptions()
@@ -220,13 +300,40 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     .title(station.name)
             )
             marker?.tag = station
+            if (station.id == selectedStationId) marker?.showInfoWindow()
         }
-        if (stations.isNotEmpty()) fitCamera()
+        updateSelectedStation()
+
+        if (!hasFramedCamera && stations.isNotEmpty()) {
+            hasFramedCamera = true
+            fitCamera()
+        }
     }
 
-    // fills the panel under the map with the selected node
+    // updates the panel, or closes it when the selected node is gone
+    private fun updateSelectedStation() {
+        if (selectedStationId.isEmpty()) return
+        val station = stations.find { it.id == selectedStationId }
+        if (station == null) {
+            selectedStationId = ""
+            findViewById<View>(R.id.details_panel).visibility = View.GONE
+            showError(getString(R.string.station_removed))
+        } else {
+            fillDetails(station)
+        }
+    }
+
+    // opens the panel under the map for the tapped node
     private fun showStationDetails(station: Station) {
         selectedStationId = station.id
+        fillDetails(station)
+        slotAdapter.setItems(emptyList())
+        findViewById<View>(R.id.no_slots_text).visibility = View.GONE
+        findViewById<View>(R.id.details_panel).visibility = View.VISIBLE
+    }
+
+    // writes the node details into the panel
+    private fun fillDetails(station: Station) {
         val capacity = station.capacityKwh.toBigDecimal().stripTrailingZeros().toPlainString()
 
         findViewById<TextView>(R.id.station_name).text = station.name
@@ -237,23 +344,19 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             getString(R.string.station_slot_count, station.batterySlotCount)
         findViewById<TextView>(R.id.station_hours).text =
             getString(R.string.station_hours, station.openingTime, station.closingTime)
-
-        slotAdapter.setItems(emptyList())
-        findViewById<View>(R.id.no_slots_text).visibility = View.GONE
-        findViewById<View>(R.id.details_panel).visibility = View.VISIBLE
     }
 
-    // gets the upcoming slots of a node from the api on a background thread
-    private fun loadSlots(station: Station) {
+    // gets the upcoming slots of a node from the api, quiet hides errors
+    private fun loadSlots(station: Station, quiet: Boolean = false) {
         Thread {
             try {
-                val json = getJson("/stations/${station.id}/slots")
+                val json = getJson("/stations/${station.id}/slots?upcoming=true")
                 val slots = EnergyBookingSlot.listFromJson(json)
                 runOnUiThread { showSlots(station.id, slots) }
             } catch (e: IOException) {
-                runOnUiThread { showError(getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(getString(R.string.server_unreachable)) }
             } catch (e: Exception) {
-                runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
             }
         }.start()
     }
@@ -271,7 +374,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    // sends a GET with the logged in user's token and returns the body, throws the api message on failure
+    // sends a GET with the logged in user's token and returns the body
     private fun getJson(path: String): String {
         val token = AppDatabase(this).session()?.token
         return ApiClient(authToken = token).get(path)
