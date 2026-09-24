@@ -265,9 +265,17 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (stations.isNotEmpty()) fitCamera()
     }
 
-    // fills the panel under the map with the selected node
+    // opens the panel under the map for the tapped node
     private fun showStationDetails(station: Station) {
         selectedStationId = station.id
+        fillDetails(station)
+        slotAdapter.setItems(emptyList())
+        findViewById<View>(R.id.no_slots_text).visibility = View.GONE
+        findViewById<View>(R.id.details_panel).visibility = View.VISIBLE
+    }
+
+    // writes the node details into the panel
+    private fun fillDetails(station: Station) {
         val capacity = station.capacityKwh.toBigDecimal().stripTrailingZeros().toPlainString()
 
         findViewById<TextView>(R.id.station_name).text = station.name
@@ -278,10 +286,6 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             getString(R.string.station_slot_count, station.batterySlotCount)
         findViewById<TextView>(R.id.station_hours).text =
             getString(R.string.station_hours, station.openingTime, station.closingTime)
-
-        slotAdapter.setItems(emptyList())
-        findViewById<View>(R.id.no_slots_text).visibility = View.GONE
-        findViewById<View>(R.id.details_panel).visibility = View.VISIBLE
     }
 
     // gets the upcoming slots of a node from the api on a background thread
