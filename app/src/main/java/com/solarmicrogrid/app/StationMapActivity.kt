@@ -42,6 +42,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var stations: List<Station> = emptyList()
     private var userLocation: LatLng? = null
     private val nearbyCount = 3
+    private var hasFramedCamera = false
 
     // after a screen rotation the answer can arrive before the map is ready, onMapReady then centres it
     private val locationPermission = registerForActivityResult(
@@ -251,9 +252,11 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }.start()
     }
 
-    // adds one marker per node, titled with the node name, skips a node without a location, then frames the camera
+    // redraws the markers from the latest nodes, frames the camera only the first time
     private fun showStations(list: List<Station>) {
         stations = list.filter { !it.latitude.isNaN() && !it.longitude.isNaN() }
+
+        map.clear()
         for (station in stations) {
             val marker = map.addMarker(
                 MarkerOptions()
@@ -261,8 +264,13 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     .title(station.name)
             )
             marker?.tag = station
+            if (station.id == selectedStationId) marker?.showInfoWindow()
         }
-        if (stations.isNotEmpty()) fitCamera()
+
+        if (!hasFramedCamera && stations.isNotEmpty()) {
+            hasFramedCamera = true
+            fitCamera()
+        }
     }
 
     // opens the panel under the map for the tapped node
