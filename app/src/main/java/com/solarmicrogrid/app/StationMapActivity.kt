@@ -41,6 +41,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var hasAskedLocation = false
     private var stations: List<Station> = emptyList()
     private var userLocation: LatLng? = null
+    private val nearbyCount = 3
 
     // after a screen rotation the answer can arrive before the map is ready, onMapReady then centres it
     private val locationPermission = registerForActivityResult(
@@ -64,6 +65,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         slotList.layoutManager = LinearLayoutManager(this)
         slotList.adapter = slotAdapter
 
+        findViewById<Button>(R.id.nearby_button).setOnClickListener { showNearby() }
         findViewById<Button>(R.id.all_nodes_button).setOnClickListener { showAllNodes() }
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -187,6 +189,17 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun fitCamera() {
         val here = userLocation
         if (here != null) fitPoints(listOf(here) + nearestTo(here, 1)) else showAllNodes()
+    }
+
+    // nearby button, fits the camera around the phone and its closest nodes
+    private fun showNearby() {
+        if (stations.isEmpty()) return
+        val here = userLocation
+        if (here == null) {
+            showError(getString(R.string.location_unknown))
+            return
+        }
+        fitPoints(listOf(here) + nearestTo(here, nearbyCount))
     }
 
     // all nodes button, fits the camera around every node
