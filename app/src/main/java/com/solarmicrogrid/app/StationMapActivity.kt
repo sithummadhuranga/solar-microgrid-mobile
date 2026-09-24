@@ -236,17 +236,17 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             .map { LatLng(it.latitude, it.longitude) }
     }
 
-    // gets the active nodes from the api on a background thread
-    private fun loadStations() {
+    // gets the active nodes from the api, quiet hides errors for the background refresh
+    private fun loadStations(quiet: Boolean = false) {
         Thread {
             try {
                 val json = getJson("/stations?active=true")
                 val stations = Station.listFromJson(json)
                 runOnUiThread { showStations(stations) }
             } catch (e: IOException) {
-                runOnUiThread { showError(getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(getString(R.string.server_unreachable)) }
             } catch (e: Exception) {
-                runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
             }
         }.start()
     }
@@ -288,17 +288,17 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
             getString(R.string.station_hours, station.openingTime, station.closingTime)
     }
 
-    // gets the upcoming slots of a node from the api on a background thread
-    private fun loadSlots(station: Station) {
+    // gets the upcoming slots of a node from the api, quiet hides errors
+    private fun loadSlots(station: Station, quiet: Boolean = false) {
         Thread {
             try {
                 val json = getJson("/stations/${station.id}/slots")
                 val slots = EnergyBookingSlot.listFromJson(json)
                 runOnUiThread { showSlots(station.id, slots) }
             } catch (e: IOException) {
-                runOnUiThread { showError(getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(getString(R.string.server_unreachable)) }
             } catch (e: Exception) {
-                runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
+                if (!quiet) runOnUiThread { showError(e.message ?: getString(R.string.server_unreachable)) }
             }
         }.start()
     }
