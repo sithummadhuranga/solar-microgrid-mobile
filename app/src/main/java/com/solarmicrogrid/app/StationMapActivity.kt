@@ -104,9 +104,10 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
         outState.putBoolean("hasAskedLocation", hasAskedLocation)
     }
 
-    // keeps the map once it is ready, listens for marker taps and loads the nodes
+    // keeps the map once it is ready, shows the zoom buttons, listens for marker taps and loads the nodes
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+        map.uiSettings.isZoomControlsEnabled = true
         map.setOnMarkerClickListener { marker ->
             val station = marker.tag as? Station ?: return@setOnMarkerClickListener false
             showStationDetails(station)
