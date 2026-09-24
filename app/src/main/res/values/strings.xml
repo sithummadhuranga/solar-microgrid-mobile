@@ -99,6 +99,9 @@
     </string-array>
 
     <string name="station_map_title">Microgrid nodes</string>
+    <string name="show_nearby_nodes">Nearby</string>
+    <string name="show_all_nodes">All nodes</string>
+    <string name="location_unknown">Your location is not known yet</string>
     <string name="open_station_map">Microgrid nodes map</string>
     <string name="server_unreachable">Could not reach the server</string>
     <string name="request_failed">Request failed, code %1$d</string>
