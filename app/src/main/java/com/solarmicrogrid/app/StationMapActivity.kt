@@ -120,11 +120,7 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // uses the location permission if granted, otherwise asks for it once
     private fun centreMap() {
-        val hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        val hasCoarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
-        if (hasFine || hasCoarse) {
+        if (hasLocationPermission()) {
             showMyLocation()
         } else if (hasAskedLocation) {
             showColombo()
@@ -134,6 +130,15 @@ class StationMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
             )
         }
+    }
+
+    // checks whether the fine or coarse location permission was granted
+    private fun hasLocationPermission(): Boolean {
+        val hasFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        return hasFine || hasCoarse
     }
 
     // turns on the my-location layer and moves to the last known location, or colombo if there is none
