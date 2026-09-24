@@ -3,12 +3,15 @@ package com.solarmicrogrid.app
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.solarmicrogrid.app.model.EnergyReservation
 
-// fills the rows of the reservation lists
-class ReservationAdapter : RecyclerView.Adapter<ReservationAdapter.ReservationHolder>() {
+// fills the rows of the reservation lists, the three dots button only shows when a menu click handler is given
+class ReservationAdapter(
+    private val onMenuClick: ((View, EnergyReservation) -> Unit)? = null
+) : RecyclerView.Adapter<ReservationAdapter.ReservationHolder>() {
 
     private var reservations = listOf<EnergyReservation>()
     private var stationNames = mapOf<String, String>()
@@ -16,9 +19,9 @@ class ReservationAdapter : RecyclerView.Adapter<ReservationAdapter.ReservationHo
     // holds the views of one row
     class ReservationHolder(view: View) : RecyclerView.ViewHolder(view) {
         val stationText: TextView = view.findViewById(R.id.stationText)
-        val slotText: TextView = view.findViewById(R.id.slotText)
         val scheduledTimeText: TextView = view.findViewById(R.id.scheduledTimeText)
         val stateText: TextView = view.findViewById(R.id.stateText)
+        val menuButton: ImageButton = view.findViewById(R.id.menuButton)
     }
 
     // replaces the list that is shown
@@ -44,17 +47,21 @@ class ReservationAdapter : RecyclerView.Adapter<ReservationAdapter.ReservationHo
         val reservation = reservations[position]
         val context = holder.itemView.context
 
-        // falls back to the id when the node is not in the saved list
-        val stationName = stationNames[reservation.stationId] ?: reservation.stationId
+        // falls back to a plain label when the node is not in the saved list
+        val stationName = stationNames[reservation.stationId] ?: context.getString(R.string.label_node)
 
-        holder.stationText.text =
-            context.getString(R.string.label_station_prefix) + stationName
-        holder.slotText.text =
-            context.getString(R.string.label_slot_prefix) + reservation.slotId
+        holder.stationText.text = stationName
         holder.scheduledTimeText.text =
-            context.getString(R.string.label_scheduled_prefix) + reservation.scheduledTime
+            context.getString(R.string.label_scheduled_prefix) + TimeHelper.display(reservation.scheduledTime)
         holder.stateText.text =
             context.getString(R.string.label_state_prefix) + reservation.state
+
+        if (onMenuClick == null) {
+            holder.menuButton.visibility = View.GONE
+        } else {
+            holder.menuButton.visibility = View.VISIBLE
+            holder.menuButton.setOnClickListener { onMenuClick.invoke(it, reservation) }
+        }
     }
 
     // how many rows the list has

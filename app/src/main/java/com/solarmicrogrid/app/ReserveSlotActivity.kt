@@ -17,17 +17,15 @@ import com.solarmicrogrid.app.api.SessionExpiredException
 import com.solarmicrogrid.app.data.AppDatabase
 import com.solarmicrogrid.app.model.EnergyBookingSlot
 import com.solarmicrogrid.app.model.Station
+import java.util.Calendar
 
 // lets a prosumer reserve an energy slot, the node and slot are picked from lists the api gives
 class ReserveSlotActivity : AppCompatActivity() {
 
-    companion object {
-        private val TIME_FORMAT = Regex("""^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z$""")
-    }
-
     private var stations = listOf<Station>()
     private var slots = listOf<EnergyBookingSlot>()
     private var token = ""
+    private var pickedTime: Calendar? = null
     private lateinit var stationSpinner: Spinner
     private lateinit var slotSpinner: Spinner
     private lateinit var errorText: TextView
@@ -53,6 +51,14 @@ class ReserveSlotActivity : AppCompatActivity() {
         stationSpinner = findViewById(R.id.stationSpinner)
         slotSpinner = findViewById(R.id.slotSpinner)
         val scheduledTimeInput = findViewById<EditText>(R.id.scheduledTimeInput)
+
+        // opens the date and time pickers instead of typing the time
+        scheduledTimeInput.setOnClickListener {
+            TimeHelper.pick(this) { picked ->
+                pickedTime = picked
+                scheduledTimeInput.setText(TimeHelper.display(picked))
+            }
+        }
         errorText = findViewById(R.id.errorText)
         reserveButton = findViewById(R.id.reserveButton)
 
@@ -80,30 +86,15 @@ class ReserveSlotActivity : AppCompatActivity() {
         reserveButton.setOnClickListener {
             val station = stations.getOrNull(stationSpinner.selectedItemPosition)
             val slot = slots.getOrNull(slotSpinner.selectedItemPosition)
-            val scheduledTime = scheduledTimeInput.text.toString().trim()
+            val picked = pickedTime
 
-            if (station == null || slot == null || scheduledTime.isEmpty()) {
+            if (station == null || slot == null || picked == null) {
                 showError(getString(R.string.error_fill_required))
                 return@setOnClickListener
             }
 
-            if (!TIME_FORMAT.matches(scheduledTime)) {
-                showError(getString(R.string.error_time_format))
-                return@setOnClickListener
-            }
-
             errorText.visibility = TextView.GONE
-            reserveSlot(station.id, slot.id, scheduledTime)
-        }
-
-        findViewById<Button>(R.id.modifyReservationButton).setOnClickListener {
-            startActivity(Intent(this, ModifyReservationActivity::class.java))
-        }
-        findViewById<Button>(R.id.cancelReservationButton).setOnClickListener {
-            startActivity(Intent(this, CancelReservationActivity::class.java))
-        }
-        findViewById<Button>(R.id.viewQrButton).setOnClickListener {
-            startActivity(Intent(this, ReservationQrActivity::class.java))
+            reserveSlot(station.id, slot.id, TimeHelper.toUtc(picked))
         }
 
         loadStations()
@@ -153,7 +144,7 @@ class ReserveSlotActivity : AppCompatActivity() {
     private fun showSlots(list: List<EnergyBookingSlot>) {
         slots = list
         val labels = list.map {
-            getString(R.string.slot_option, shortTime(it.startTime), shortTime(it.endTime), it.availableSlots, it.totalSlots)
+            getString(R.string.slot_option, TimeHelper.range(it.startTime, it.endTime), it.availableSlots, it.totalSlots)
         }
         slotSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, labels)
         reserveButton.isEnabled = list.isNotEmpty()
@@ -163,11 +154,6 @@ class ReserveSlotActivity : AppCompatActivity() {
         } else if (list.isNotEmpty()) {
             errorText.visibility = TextView.GONE
         }
-    }
-
-    // cuts a utc time from the api down to date and minutes
-    private fun shortTime(utc: String): String {
-        return utc.take(16).replace('T', ' ')
     }
 
     // sends the create reservation request off the main thread
