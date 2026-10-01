@@ -13,7 +13,7 @@ class SessionExpiredException(message: String) : Exception(message)
 
 // calls the web api, the one class every android screen uses for network calls
 class ApiClient(
-    private val baseUrl: String = "http://10.0.2.2:5080/api",
+    private val baseUrl: String = "https://api-solarmicrogrid.sithum.dev/api",
     private val authToken: String? = null
 ) {
 
