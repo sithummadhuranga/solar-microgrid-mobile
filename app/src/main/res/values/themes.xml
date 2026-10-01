@@ -4,5 +4,18 @@
         <item name="colorPrimary">@color/solar_green</item>
         <item name="colorPrimaryDark">@color/solar_green_dark</item>
         <item name="colorAccent">@color/solar_green</item>
+        <item name="materialButtonStyle">@style/Widget.SolarMicrogrid.Button</item>
+    </style>
+
+    <!-- rounded, sentence case buttons instead of the sharp all caps material default, used app wide -->
+    <style name="Widget.SolarMicrogrid.Button" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textSize">15sp</item>
     </style>
 </resources>

@@ -4,13 +4,13 @@ Smart Solar Microgrid Trading System, the Android app. Pure native Android with 
 
 ## Folders
 
-Nothing yet. The Android Studio project is set up in a later task, once the language and networking approach are confirmed.
+app is the Android Studio module. Source lives in app/src/main/java/com/solarmicrogrid/app, screens and layouts in app/src/main/res.
 
 ## Needed
 
 Android Studio, a JDK, an emulator or a device with Google Play services for the map.
 
-The gradle wrapper jar and gradlew scripts are not committed yet, since they need a machine with Gradle or Android Studio to generate. Open this folder in Android Studio and let it prompt to set up the wrapper on first sync, or run `gradle wrapper --gradle-version 8.7` yourself if you have Gradle installed.
+The gradle wrapper (gradlew, gradlew.bat, gradle/) is committed. Open this folder in Android Studio and let it sync, or run `./gradlew build` from a terminal.
 
 ## How we work
 
@@ -20,7 +20,7 @@ Every member commits from their own account, small steps, short lower case commi
 
 | Member | Name | Contribution |
 |---|---|---|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
+| 1 | Sithum Madhuranga | Login and roles, prosumer registration and profile, account deactivation |
+| 2 | Christine Lowe | Nearby nodes map, node details and slots |
+| 3 | Sathush Nanayakkara | Reserve, modify and cancel energy slots, the 7-day and 12-hour rules |
+| 4 | Nimnath Nadushka | Dashboard, booking history and search, operator QR scan and verify, SQLite storage |
